@@ -1,0 +1,288 @@
+{
+  "defaultStyle": "assassin",
+  "defaultRageCost": 100,
+  "rageCostTiers": [
+    { "legacyMin": 23, "rageCost": 200 },
+    { "legacyMin": 20, "rageCost": 180 },
+    { "legacyMin": 18, "rageCost": 150 }
+  ],
+  "styles": {
+    "burst": {
+      "activeSkills": [
+        {
+          "name": "裂空绝斩",
+          "type": "ACTIVE_DAMAGE",
+          "category": "DAMAGE",
+          "cooldown": 2,
+          "cost": 20,
+          "damageA": 1.88,
+          "damageB": 0.86,
+          "defensePenetration": 0.12
+        },
+        {
+          "name": "追命破势",
+          "type": "ACTIVE_DAMAGE",
+          "category": "DAMAGE",
+          "cooldown": 3,
+          "cost": 22,
+          "damageA": 2.05,
+          "damageB": 0.90,
+          "defensePenetration": 0.14
+        },
+        {
+          "name": "回锋护体",
+          "type": "ACTIVE_DEFENSE",
+          "category": "DEFENSE",
+          "cooldown": 3,
+          "cost": 15,
+          "duration": 2,
+          "buffs": {
+            "defense": 0.16,
+            "block": 0.08
+          }
+        },
+        {
+          "name": "聚气回元",
+          "type": "ACTIVE_HEAL",
+          "category": "HEAL",
+          "cooldown": 4,
+          "cost": 18,
+          "healRatio": 0.15,
+          "healFlat": 80
+        }
+      ],
+      "passive": {
+        "name": "战意昂扬",
+        "type": "PASSIVE",
+        "category": "DEFENSE",
+        "duration": 4,
+        "buffs": {
+          "attack": 0.08,
+          "crit": 0.06
+        }
+      }
+    },
+    "tank": {
+      "activeSkills": [
+        {
+          "name": "镇岳重击",
+          "type": "ACTIVE_DAMAGE",
+          "category": "DAMAGE",
+          "cooldown": 2,
+          "cost": 18,
+          "damageA": 1.72,
+          "damageB": 0.80,
+          "defensePenetration": 0.12
+        },
+        {
+          "name": "护罡真壁",
+          "type": "ACTIVE_DEFENSE",
+          "category": "DEFENSE",
+          "cooldown": 3,
+          "cost": 16,
+          "duration": 2,
+          "buffs": {
+            "defense": 0.22,
+            "block": 0.10
+          }
+        },
+        {
+          "name": "稳阵定势",
+          "type": "ACTIVE_DEFENSE",
+          "category": "DEFENSE",
+          "cooldown": 3,
+          "cost": 15,
+          "duration": 1,
+          "buffs": {
+            "defense": 0.16,
+            "blockDamage": 0.12
+          }
+        },
+        {
+          "name": "气海归真",
+          "type": "ACTIVE_HEAL",
+          "category": "HEAL",
+          "cooldown": 4,
+          "cost": 20,
+          "healRatio": 0.18,
+          "healFlat": 80
+        }
+      ],
+      "passive": {
+        "name": "不动如山",
+        "type": "PASSIVE",
+        "category": "DEFENSE",
+        "duration": 4,
+        "buffs": {
+          "defense": 0.10,
+          "block": 0.06
+        }
+      }
+    },
+    "sustain": {
+      "activeSkills": [
+        {
+          "name": "绵劲回旋",
+          "type": "ACTIVE_DAMAGE",
+          "category": "DAMAGE",
+          "cooldown": 2,
+          "cost": 18,
+          "damageA": 1.68,
+          "damageB": 0.92,
+          "defensePenetration": 0.10
+        },
+        {
+          "name": "真气挪移",
+          "type": "ACTIVE_DEFENSE",
+          "category": "DEFENSE",
+          "cooldown": 3,
+          "cost": 17,
+          "duration": 2,
+          "buffs": {
+            "defense": 0.15,
+            "dodge": 0.08
+          }
+        },
+        {
+          "name": "长息疗伤",
+          "type": "ACTIVE_HEAL",
+          "category": "HEAL",
+          "cooldown": 3,
+          "cost": 18,
+          "healRatio": 0.20,
+          "healFlat": 60
+        },
+        {
+          "name": "元气续命",
+          "type": "ACTIVE_HEAL",
+          "category": "HEAL",
+          "cooldown": 4,
+          "cost": 20,
+          "healRatio": 0.15,
+          "healFlat": 110
+        }
+      ],
+      "passive": {
+        "name": "气息绵长",
+        "type": "PASSIVE",
+        "category": "DEFENSE",
+        "duration": 4,
+        "buffs": {
+          "defense": 0.06,
+          "hit": 0.05
+        }
+      }
+    },
+    "control": {
+      "activeSkills": [
+        {
+          "name": "破影穿刺",
+          "type": "ACTIVE_DAMAGE",
+          "category": "DAMAGE",
+          "cooldown": 2,
+          "cost": 17,
+          "damageA": 1.66,
+          "damageB": 0.88,
+          "defensePenetration": 0.12
+        },
+        {
+          "name": "蚀骨暗劲",
+          "type": "ACTIVE_POISON",
+          "category": "DAMAGE",
+          "cooldown": 3,
+          "cost": 20,
+          "duration": 3,
+          "poisonRatio": 0.15,
+          "poisonFlat": 24
+        },
+        {
+          "name": "移形卸力",
+          "type": "ACTIVE_DEFENSE",
+          "category": "DEFENSE",
+          "cooldown": 3,
+          "cost": 15,
+          "duration": 2,
+          "buffs": {
+            "dodge": 0.16,
+            "defense": 0.10
+          }
+        },
+        {
+          "name": "凝神调息",
+          "type": "ACTIVE_HEAL",
+          "category": "HEAL",
+          "cooldown": 4,
+          "cost": 18,
+          "healRatio": 0.14,
+          "healFlat": 90
+        }
+      ],
+      "passive": {
+        "name": "机巧牵制",
+        "type": "PASSIVE",
+        "category": "DEFENSE",
+        "duration": 4,
+        "buffs": {
+          "hit": 0.06,
+          "dodge": 0.06
+        }
+      }
+    },
+    "assassin": {
+      "activeSkills": [
+        {
+          "name": "幻影连突",
+          "type": "ACTIVE_DAMAGE",
+          "category": "DAMAGE",
+          "cooldown": 2,
+          "cost": 18,
+          "damageA": 1.76,
+          "damageB": 0.84,
+          "defensePenetration": 0.10
+        },
+        {
+          "name": "断魂追击",
+          "type": "ACTIVE_DAMAGE",
+          "category": "DAMAGE",
+          "cooldown": 2,
+          "cost": 20,
+          "damageA": 1.92,
+          "damageB": 0.82,
+          "defensePenetration": 0.12
+        },
+        {
+          "name": "疾风绝刺",
+          "type": "ACTIVE_DAMAGE",
+          "category": "DAMAGE",
+          "cooldown": 3,
+          "cost": 22,
+          "damageA": 2.08,
+          "damageB": 0.90,
+          "defensePenetration": 0.15
+        },
+        {
+          "name": "残步护身",
+          "type": "ACTIVE_DEFENSE",
+          "category": "DEFENSE",
+          "cooldown": 3,
+          "cost": 15,
+          "duration": 1,
+          "buffs": {
+            "dodge": 0.18,
+            "defense": 0.08
+          }
+        }
+      ],
+      "passive": {
+        "name": "追猎本能",
+        "type": "PASSIVE",
+        "category": "DEFENSE",
+        "duration": 4,
+        "buffs": {
+          "crit": 0.08,
+          "hit": 0.05
+        }
+      }
+    }
+  }
+}

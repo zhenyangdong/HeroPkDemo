@@ -1,0 +1,182 @@
+[
+  {
+    "id": "dongfang",
+    "name": "东方不败",
+    "title": "极速爆发",
+    "style": "burst",
+    "nearDeathEnabled": false,
+    "primary": { "tili": 85, "wuli": 100, "fangyu": 82, "neili": 100 },
+    "secondary": { "critRate": 0.35, "critDamageRate": 1.25, "hitRate": 0.93, "dodgeRate": 0.16, "blockRate": 0.09, "blockDamage": 0.18 }
+  },
+  {
+    "id": "zhangwuji",
+    "name": "张无忌",
+    "title": "内功续航",
+    "style": "sustain",
+    "nearDeathEnabled": true,
+    "primary": { "tili": 99, "wuli": 90, "fangyu": 95, "neili": 100 },
+    "secondary": { "critRate": 0.20, "critDamageRate": 0.85, "hitRate": 0.84, "dodgeRate": 0.07, "blockRate": 0.18, "blockDamage": 0.35 }
+  },
+  {
+    "id": "zhoubotong",
+    "name": "周伯通",
+    "title": "双手互搏",
+    "style": "assassin",
+    "nearDeathEnabled": true,
+    "primary": { "tili": 95, "wuli": 97, "fangyu": 91, "neili": 96 },
+    "secondary": { "critRate": 0.28, "critDamageRate": 1.05, "hitRate": 0.90, "dodgeRate": 0.11, "blockRate": 0.14, "blockDamage": 0.26 }
+  },
+  {
+    "id": "renyingying",
+    "name": "任盈盈",
+    "title": "琴心扰敌",
+    "style": "control",
+    "nearDeathEnabled": false,
+    "primary": { "tili": 84, "wuli": 88, "fangyu": 82, "neili": 95 },
+    "secondary": { "critRate": 0.23, "critDamageRate": 0.92, "hitRate": 0.91, "dodgeRate": 0.14, "blockRate": 0.11, "blockDamage": 0.23 }
+  },
+  {
+    "id": "miejue",
+    "name": "灭绝师太",
+    "title": "峨眉重压",
+    "style": "burst",
+    "nearDeathEnabled": false,
+    "primary": { "tili": 92, "wuli": 93, "fangyu": 90, "neili": 92 },
+    "secondary": { "critRate": 0.26, "critDamageRate": 1.00, "hitRate": 0.86, "dodgeRate": 0.09, "blockRate": 0.15, "blockDamage": 0.28 }
+  },
+  {
+    "id": "ouyangfeng",
+    "name": "欧阳锋",
+    "title": "毒劲穿透",
+    "style": "control",
+    "nearDeathEnabled": true,
+    "primary": { "tili": 93, "wuli": 96, "fangyu": 88, "neili": 97 },
+    "secondary": { "critRate": 0.27, "critDamageRate": 1.08, "hitRate": 0.87, "dodgeRate": 0.10, "blockRate": 0.13, "blockDamage": 0.27 }
+  },
+  {
+    "id": "yuanchengzhi",
+    "name": "袁承志",
+    "title": "奇门压阵",
+    "style": "tank",
+    "nearDeathEnabled": false,
+    "primary": { "tili": 90, "wuli": 92, "fangyu": 89, "neili": 91 },
+    "secondary": { "critRate": 0.25, "critDamageRate": 0.98, "hitRate": 0.87, "dodgeRate": 0.10, "blockRate": 0.14, "blockDamage": 0.27 }
+  },
+  {
+    "id": "wangchongyang",
+    "name": "王重阳",
+    "title": "宗师稳压",
+    "style": "tank",
+    "nearDeathEnabled": false,
+    "primary": { "tili": 96, "wuli": 97, "fangyu": 98, "neili": 99 },
+    "secondary": { "critRate": 0.24, "critDamageRate": 0.98, "hitRate": 0.89, "dodgeRate": 0.08, "blockRate": 0.19, "blockDamage": 0.36 }
+  },
+  {
+    "id": "huangrong",
+    "name": "黄蓉",
+    "title": "智谋辅助",
+    "style": "control",
+    "nearDeathEnabled": false,
+    "primary": { "tili": 82, "wuli": 85, "fangyu": 80, "neili": 98 },
+    "secondary": { "critRate": 0.23, "critDamageRate": 0.80, "hitRate": 0.92, "dodgeRate": 0.11, "blockRate": 0.12, "blockDamage": 0.24 }
+  },
+  {
+    "id": "linpingzhi",
+    "name": "林平之",
+    "title": "迅刺突袭",
+    "style": "assassin",
+    "nearDeathEnabled": false,
+    "primary": { "tili": 80, "wuli": 95, "fangyu": 78, "neili": 86 },
+    "secondary": { "critRate": 0.31, "critDamageRate": 1.15, "hitRate": 0.88, "dodgeRate": 0.12, "blockRate": 0.10, "blockDamage": 0.22 }
+  },
+  {
+    "id": "linghuchong",
+    "name": "令狐冲",
+    "title": "反制剑客",
+    "style": "control",
+    "nearDeathEnabled": false,
+    "primary": { "tili": 86, "wuli": 94, "fangyu": 85, "neili": 97 },
+    "secondary": { "critRate": 0.27, "critDamageRate": 0.95, "hitRate": 0.88, "dodgeRate": 0.10, "blockRate": 0.13, "blockDamage": 0.26 }
+  },
+  {
+    "id": "guojing",
+    "name": "郭靖",
+    "title": "均衡战士",
+    "style": "tank",
+    "nearDeathEnabled": true,
+    "primary": { "tili": 98, "wuli": 96, "fangyu": 97, "neili": 95 },
+    "secondary": { "critRate": 0.22, "critDamageRate": 1.00, "hitRate": 0.84, "dodgeRate": 0.06, "blockRate": 0.18, "blockDamage": 0.32 }
+  },
+  {
+    "id": "weixiaobao",
+    "name": "韦小宝",
+    "title": "机变干扰",
+    "style": "control",
+    "nearDeathEnabled": false,
+    "primary": { "tili": 72, "wuli": 76, "fangyu": 70, "neili": 82 },
+    "secondary": { "critRate": 0.18, "critDamageRate": 0.70, "hitRate": 0.90, "dodgeRate": 0.14, "blockRate": 0.10, "blockDamage": 0.20 }
+  },
+  {
+    "id": "liuxiufeng",
+    "name": "柳绣风",
+    "title": "游龙剑舞",
+    "style": "burst",
+    "nearDeathEnabled": false,
+    "primary": { "tili": 86, "wuli": 94, "fangyu": 84, "neili": 92 },
+    "secondary": { "critRate": 0.29, "critDamageRate": 1.06, "hitRate": 0.90, "dodgeRate": 0.12, "blockRate": 0.11, "blockDamage": 0.24 }
+  },
+  {
+    "id": "yangguo",
+    "name": "杨过",
+    "title": "爆发刺客",
+    "style": "assassin",
+    "nearDeathEnabled": true,
+    "primary": { "tili": 88, "wuli": 99, "fangyu": 82, "neili": 94 },
+    "secondary": { "critRate": 0.30, "critDamageRate": 1.15, "hitRate": 0.83, "dodgeRate": 0.09, "blockRate": 0.12, "blockDamage": 0.24 }
+  },
+  {
+    "id": "xuzhu",
+    "name": "虚竹",
+    "title": "厚积内劲",
+    "style": "sustain",
+    "nearDeathEnabled": true,
+    "primary": { "tili": 98, "wuli": 88, "fangyu": 96, "neili": 99 },
+    "secondary": { "critRate": 0.20, "critDamageRate": 0.88, "hitRate": 0.86, "dodgeRate": 0.07, "blockRate": 0.18, "blockDamage": 0.34 }
+  },
+  {
+    "id": "duanyu",
+    "name": "段誉",
+    "title": "灵巧剑气",
+    "style": "control",
+    "nearDeathEnabled": false,
+    "primary": { "tili": 87, "wuli": 89, "fangyu": 83, "neili": 98 },
+    "secondary": { "critRate": 0.24, "critDamageRate": 0.95, "hitRate": 0.90, "dodgeRate": 0.13, "blockRate": 0.11, "blockDamage": 0.24 }
+  },
+  {
+    "id": "qiaofeng",
+    "name": "乔峰",
+    "title": "高攻压制",
+    "style": "burst",
+    "nearDeathEnabled": true,
+    "primary": { "tili": 100, "wuli": 100, "fangyu": 100, "neili": 100 },
+    "secondary": { "critRate": 0.25, "critDamageRate": 1.00, "hitRate": 0.85, "dodgeRate": 0.05, "blockRate": 0.15, "blockDamage": 0.30 }
+  },
+  {
+    "id": "xiaolongnv",
+    "name": "小龙女",
+    "title": "敏捷控制",
+    "style": "control",
+    "nearDeathEnabled": false,
+    "primary": { "tili": 84, "wuli": 92, "fangyu": 83, "neili": 96 },
+    "secondary": { "critRate": 0.26, "critDamageRate": 0.92, "hitRate": 0.87, "dodgeRate": 0.13, "blockRate": 0.11, "blockDamage": 0.22 }
+  },
+  {
+    "id": "renwoxing",
+    "name": "任我行",
+    "title": "霸道内爆",
+    "style": "tank",
+    "nearDeathEnabled": true,
+    "primary": { "tili": 97, "wuli": 98, "fangyu": 94, "neili": 99 },
+    "secondary": { "critRate": 0.24, "critDamageRate": 1.02, "hitRate": 0.86, "dodgeRate": 0.08, "blockRate": 0.17, "blockDamage": 0.31 }
+  }
+]

@@ -24,3 +24,4 @@ Workflow:
 When useful, leverage the skill "hero-pk-battle-playbook" for damage tuning tasks.
 When implementing rage accumulation and rage-gated skill release, leverage "hero-pk-rage-release-playbook".
 When diagnosing or preventing garbled text (terminal/backend/frontend), leverage "garbled-text-recovery-playbook".
+When preparing final delivery commits, leverage "git-commit-playbook".
