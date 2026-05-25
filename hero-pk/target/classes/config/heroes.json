@@ -178,5 +178,95 @@
     "nearDeathEnabled": true,
     "primary": { "tili": 97, "wuli": 98, "fangyu": 94, "neili": 99 },
     "secondary": { "critRate": 0.24, "critDamageRate": 1.02, "hitRate": 0.86, "dodgeRate": 0.08, "blockRate": 0.17, "blockDamage": 0.31 }
+  },
+  {
+    "id": "huangyaoshi",
+    "name": "黄药师",
+    "title": "弹指破局",
+    "style": "control",
+    "nearDeathEnabled": false,
+    "primary": { "tili": 91, "wuli": 95, "fangyu": 88, "neili": 98 },
+    "secondary": { "critRate": 0.27, "critDamageRate": 1.01, "hitRate": 0.91, "dodgeRate": 0.12, "blockRate": 0.13, "blockDamage": 0.25 }
+  },
+  {
+    "id": "hongqigong",
+    "name": "洪七公",
+    "title": "降龙劲霸",
+    "style": "burst",
+    "nearDeathEnabled": true,
+    "primary": { "tili": 99, "wuli": 99, "fangyu": 95, "neili": 97 },
+    "secondary": { "critRate": 0.28, "critDamageRate": 1.08, "hitRate": 0.88, "dodgeRate": 0.08, "blockRate": 0.16, "blockDamage": 0.30 }
+  },
+  {
+    "id": "yideng",
+    "name": "一灯大师",
+    "title": "慈悲续命",
+    "style": "sustain",
+    "nearDeathEnabled": true,
+    "primary": { "tili": 96, "wuli": 90, "fangyu": 94, "neili": 100 },
+    "secondary": { "critRate": 0.21, "critDamageRate": 0.90, "hitRate": 0.87, "dodgeRate": 0.09, "blockRate": 0.17, "blockDamage": 0.33 }
+  },
+  {
+    "id": "zhouzhiruo",
+    "name": "周芷若",
+    "title": "倚天寒锋",
+    "style": "assassin",
+    "nearDeathEnabled": false,
+    "primary": { "tili": 85, "wuli": 96, "fangyu": 82, "neili": 92 },
+    "secondary": { "critRate": 0.30, "critDamageRate": 1.12, "hitRate": 0.89, "dodgeRate": 0.13, "blockRate": 0.10, "blockDamage": 0.21 }
+  },
+  {
+    "id": "jinlunfawang",
+    "name": "金轮法王",
+    "title": "金轮护身",
+    "style": "tank",
+    "nearDeathEnabled": true,
+    "primary": { "tili": 98, "wuli": 97, "fangyu": 99, "neili": 94 },
+    "secondary": { "critRate": 0.23, "critDamageRate": 0.97, "hitRate": 0.86, "dodgeRate": 0.07, "blockRate": 0.20, "blockDamage": 0.37 }
+  },
+  {
+    "id": "murongfu",
+    "name": "慕容复",
+    "title": "斗转反击",
+    "style": "control",
+    "nearDeathEnabled": false,
+    "primary": { "tili": 89, "wuli": 95, "fangyu": 87, "neili": 95 },
+    "secondary": { "critRate": 0.26, "critDamageRate": 0.98, "hitRate": 0.90, "dodgeRate": 0.11, "blockRate": 0.14, "blockDamage": 0.27 }
+  },
+  {
+    "id": "xiexun",
+    "name": "谢逊",
+    "title": "狮吼裂阵",
+    "style": "burst",
+    "nearDeathEnabled": true,
+    "primary": { "tili": 97, "wuli": 100, "fangyu": 92, "neili": 90 },
+    "secondary": { "critRate": 0.29, "critDamageRate": 1.09, "hitRate": 0.86, "dodgeRate": 0.07, "blockRate": 0.15, "blockDamage": 0.29 }
+  },
+  {
+    "id": "chengyaojia",
+    "name": "程瑶迦",
+    "title": "柔劲续航",
+    "style": "sustain",
+    "nearDeathEnabled": false,
+    "primary": { "tili": 88, "wuli": 86, "fangyu": 85, "neili": 93 },
+    "secondary": { "critRate": 0.22, "critDamageRate": 0.84, "hitRate": 0.89, "dodgeRate": 0.12, "blockRate": 0.13, "blockDamage": 0.26 }
+  },
+  {
+    "id": "hebiweng",
+    "name": "鹤笔翁",
+    "title": "寒毒侵体",
+    "style": "control",
+    "nearDeathEnabled": false,
+    "primary": { "tili": 90, "wuli": 93, "fangyu": 86, "neili": 94 },
+    "secondary": { "critRate": 0.25, "critDamageRate": 0.96, "hitRate": 0.89, "dodgeRate": 0.10, "blockRate": 0.13, "blockDamage": 0.25 }
+  },
+  {
+    "id": "yangxia",
+    "name": "杨逍",
+    "title": "明教奇袭",
+    "style": "assassin",
+    "nearDeathEnabled": true,
+    "primary": { "tili": 90, "wuli": 97, "fangyu": 84, "neili": 95 },
+    "secondary": { "critRate": 0.31, "critDamageRate": 1.14, "hitRate": 0.88, "dodgeRate": 0.11, "blockRate": 0.11, "blockDamage": 0.23 }
   }
 ]

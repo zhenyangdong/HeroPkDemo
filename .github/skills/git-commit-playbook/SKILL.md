@@ -10,7 +10,7 @@ user-invocable: true
 ## What This Skill Produces
 - A safe, repeatable commit flow for local repository changes.
 - Optional push after commit.
-- Optional auto-generated commit message from changed files.
+- Optional auto-generated commit message from business intent (not file lists).
 - Standardized terminal output for changed files, commit hash, and push status.
 
 ## When To Use
@@ -39,8 +39,19 @@ user-invocable: true
 - `./.github/skills/git-commit-playbook/scripts/commit-and-push.ps1 -ProjectPath "c:\code\self\knownedge" -CommitMessage "feat: update hero-pk near-death flow" -Push`
 
 ## Auto Message Mode
-- Enable `-AutoMessage` to generate a commit message from staged file paths.
+- Enable `-AutoMessage` to generate a commit message from staged business changes.
 - Optional `-TypePrefix` controls prefix (`chore` by default, e.g. `feat`, `fix`, `docs`).
+
+Generation rules (default):
+1. Build scope by business domain priority (e.g. `hero-pk`, `workflow`, then fallback project scope).
+2. Infer intent from staged diff signals (battle mechanics, skill config externalization, UI behavior, docs, tests, workflow updates).
+3. Output format is `type(scope): business summary`.
+4. Never use file-path listing as commit message body in auto mode.
+
+Example semantic outputs:
+- `feat(hero-pk): externalize skill templates and rage-cost rules`
+- `fix(hero-pk): tune battle mechanics and state effects`
+- `chore(workflow): standardize commit workflow and automation rules`
 
 Examples:
 - `./.github/skills/git-commit-playbook/scripts/commit-and-push.ps1 -ProjectPath "c:\code\self\knownedge" -AutoMessage`

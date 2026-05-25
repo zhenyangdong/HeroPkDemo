@@ -16,23 +16,63 @@ function New-AutoCommitMessage {
     )
 
     if (-not $Files -or $Files.Count -eq 0) {
-        return "${Prefix}: update project files"
+        return "${Prefix}(project): refine business workflow"
     }
 
-    $first = $Files[0]
-    $topScope = "project"
-    if ($first -match '^[^\\/]+') {
-        $topScope = $matches[0]
+    $scope = "project"
+    if (($Files | Where-Object { $_ -like 'hero-pk/*' } | Measure-Object).Count -gt 0) {
+        $scope = "hero-pk"
+    } elseif (($Files | Where-Object { $_ -like '.github/*' } | Measure-Object).Count -gt 0) {
+        $scope = "workflow"
+    } else {
+        $first = $Files[0]
+        if ($first -match '^[^\\/]+') {
+            $scope = $matches[0]
+        }
     }
 
-    $shown = @($Files | Select-Object -First 3)
-    $rest = $Files.Count - $shown.Count
-    $detail = ($shown -join ', ')
-    if ($rest -gt 0) {
-        $detail = "$detail, +$rest files"
+    $signals = New-Object System.Collections.Generic.List[string]
+    $stagedPatch = (git diff --cached --unified=0) | Out-String
+
+    if (($Files | Where-Object { $_ -match 'hero-pk/src/main/resources/config/skill-templates.json|HeroDataService\.java' } | Measure-Object).Count -gt 0 -or
+        $stagedPatch -match 'loadSkillTemplateConfig|rageCostTiers|defaultRageCost|skill-templates\.json') {
+        $signals.Add('externalize skill templates and rage-cost rules')
     }
 
-    return "${Prefix}: update $topScope ($detail)"
+    if (($Files | Where-Object { $_ -match 'hero-pk/src/main/resources/config/heroes\.json' } | Measure-Object).Count -gt 0 -or
+        $stagedPatch -match 'nearDeathEnabled|style|heroes\.json') {
+        $signals.Add('refine hero data configuration flow')
+    }
+
+    if (($Files | Where-Object { $_ -match 'BattleService\.java' } | Measure-Object).Count -gt 0 -or
+        $stagedPatch -match 'nearDeath|poison|combo|rage') {
+        $signals.Add('tune battle mechanics and state effects')
+    }
+
+    if (($Files | Where-Object { $_ -match 'src/main/resources/static/(app\.js|index\.html|styles\.css)' } | Measure-Object).Count -gt 0) {
+        $signals.Add('improve battle UI presentation and readability')
+    }
+
+    if (($Files | Where-Object { $_ -match '\.github/skills/git-commit-playbook|\.github/agents' } | Measure-Object).Count -gt 0) {
+        $signals.Add('standardize commit workflow and automation rules')
+    }
+
+    if (($Files | Where-Object { $_ -match 'HERO_PK_SYSTEM_DESIGN\.md|README\.md|\.md$' } | Measure-Object).Count -gt 0) {
+        $signals.Add('update design and usage documentation')
+    }
+
+    if (($Files | Where-Object { $_ -match '/test/|Test\.java$' } | Measure-Object).Count -gt 0) {
+        $signals.Add('add or adjust verification coverage')
+    }
+
+    $summaryList = @($signals | Select-Object -Unique)
+    if ($summaryList.Count -eq 0) {
+        $summary = 'refine business logic and project workflow'
+    } else {
+        $summary = ($summaryList | Select-Object -First 2) -join ' + '
+    }
+
+    return "${Prefix}(${scope}): $summary"
 }
 
 Push-Location $ProjectPath
