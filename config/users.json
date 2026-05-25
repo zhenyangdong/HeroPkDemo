@@ -1,0 +1,9 @@
+{
+  "users": [
+    { "username": "admin",  "password": "admin123",  "displayName": "管理员", "role": "admin"  },
+    { "username": "alice",  "password": "alice123",  "displayName": "Alice", "role": "user"   },
+    { "username": "bob",    "password": "bob123",    "displayName": "Bob",   "role": "user"   },
+    { "username": "guest",  "password": "guest123",  "displayName": "访客",   "role": "viewer" }
+  ],
+  "sessionSecret": "change-me-in-production-please"
+}

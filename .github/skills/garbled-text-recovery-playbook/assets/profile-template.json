@@ -1,0 +1,15 @@
+{
+  "terminalRunCommand": "mvn spring-boot:run \"-Dspring-boot.run.arguments=--terminal\"",
+  "webRunCommand": "mvn spring-boot:run",
+  "apiProbeUrl": "http://localhost:8081/api/meta",
+  "frontendProbeUrl": "http://localhost:8081/",
+  "probePhrases": [
+    "示例词A",
+    "示例词B"
+  ],
+  "autoDiscoverProbePhrases": true,
+  "minProbeCount": 2,
+  "webStartupWaitSeconds": 6,
+  "buildCommand": "mvn -q -DskipTests clean package",
+  "javaToolOptions": "-Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8"
+}

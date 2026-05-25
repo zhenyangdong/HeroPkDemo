@@ -1,0 +1,45 @@
+{
+  "5oqA5pyvXE1hcmtkb3du6YCf5p-lLm1k": [
+    {
+      "id": "152c245fbe6ec176",
+      "author": "alice",
+      "authorName": "Alice",
+      "content": "测试评论：这篇文章很有用",
+      "createdAt": "2026-04-28T05:14:54.557Z"
+    },
+    {
+      "id": "215873992da83225",
+      "author": "admin",
+      "authorName": "管理员",
+      "content": "这是一个简单的demo",
+      "createdAt": "2026-04-28T05:17:02.232Z"
+    },
+    {
+      "id": "3d041b75993116ff",
+      "author": "alice",
+      "authorName": "Alice",
+      "content": "<h3>富文本测试</h3><p>这是<strong>加粗</strong>与<em>斜体</em>，还有<a href=\"https://example.com\" target=\"_blank\" rel=\"noopener noreferrer\">链接</a>。</p><ul><li>条目1</li><li>条目2</li></ul>",
+      "format": "html",
+      "createdAt": "2026-04-28T05:22:21.497Z"
+    }
+  ],
+  "aWRhcEZBLmRvY3g": [
+    {
+      "id": "bb86ea111d61f0b6",
+      "author": "alice",
+      "authorName": "Alice",
+      "content": "<p>看图：</p>",
+      "format": "html",
+      "createdAt": "2026-04-29T07:33:51.324Z"
+    },
+    {
+      "id": "7238cd93c70fa4ca",
+      "author": "alice",
+      "authorName": "Alice",
+      "content": "<p>看图：</p><img src=\"/uploads/comment-images/1777448128240-94d60ea2ccbf.png\" alt=\"test\" loading=\"lazy\">",
+      "format": "html",
+      "createdAt": "2026-04-29T07:35:29.176Z"
+    }
+  ],
+  "5oqA5pyvXGljZWJlcmdfbXVsdGlfc3RvcmFnZS5wcHR4": []
+}

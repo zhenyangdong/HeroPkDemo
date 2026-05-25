@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Global System</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+</head>
+<body>
+<div id="app" class="layout">
+  <header class="top">
+    <h1>金庸英雄 PK 系统</h1>
+    <p>回合制，25% 主动技能触发，75% 普通攻击</p>
+  </header>
+
+  <section class="panel rules" v-if="meta">
+    <h2>规则摘要</h2>
+    <p>技能触发率：{{ (meta.skillTriggerRate * 100).toFixed(0) }}%，普通攻击：{{ (meta.normalAttackRate * 100).toFixed(0) }}%</p>
+    <p>体力 > 500 时偏伤害；301-500 时偏防御；<= 300 时偏补血（触发技能后才进行类别抽取）。</p>
+    <p>体力算法：{{ meta.hpFormula }}。例如乔峰体力 100 时，最大生命为 1000（不是 4400）。</p>
+    <p v-if="meta.rageRule">怒气规则：{{ meta.rageRule }}</p>
+    <p v-if="meta.comboRule">连击/重击：{{ meta.comboRule }}</p>
+    <p v-if="meta.poisonRule">中毒规则：{{ meta.poisonRule }}</p>
+    <p v-if="meta.damageRule">伤害规则：{{ meta.damageRule }}</p>
+    <p v-if="meta.critRule">暴击规则：{{ meta.critRule }}</p>
+    <p v-if="meta.nearDeathRule">濒死规则：{{ meta.nearDeathRule }}</p>
+    <p v-if="meta.singleHitCap">单次伤害上限：普通攻击 {{ (meta.singleHitCap.normal * 100).toFixed(0) }}%，武功伤害 {{ (meta.singleHitCap.skill * 100).toFixed(0) }}%（按目标最大生命计算）。</p>
+
+    <div class="formula-box">
+      <h3>伤害计算公式梳理</h3>
+      <p>1) 命中判定：hitChance = clamp(0.72 + (命中率 - 闪避率) × 0.20, 0.35, 0.99)</p>
+      <p>2) 随机攻击：rolledAttack = attackValue × (1 + ((rand × 0.16) - 0.08) × randomScale)</p>
+      <p>3) 防御减伤：mitigation = defenseValue / (defenseValue + 260)</p>
+      <p>4) 基础伤害：base = max(rolledAttack × (1 - mitigation × 0.90), attackValue × minDamageRatio)</p>
+      <p>5) 暴击修正：critChance = clamp(暴击率 - 格挡率 × 0.25, 0.02, 0.55)，触发后 base ×= clamp(暴伤倍率, 1.05, 1.75)</p>
+      <p>6) 格挡修正：blockChance = clamp(格挡率 - 命中率 × 0.08 + 0.02, 0.03, 0.50)</p>
+      <p>7) 封顶落地：damage = round(min(base, 目标最大生命 × capRatio))，最小为 1（未命中则 0）</p>
+    </div>
+
+    <div class="formula-box example-box">
+      <h3>示例（普通攻击）</h3>
+      <p>设：attackValue=185，defenseValue=155，randomScale=0.55，minDamageRatio=0.20，capRatio=0.24，目标 maxHp=1000。</p>
+      <p>命中率 98%，闪避率 16%：hitChance = 0.72 + (0.98 - 0.16) × 0.20 = 0.884（88.4%）</p>
+      <p>若本次随机因子取 0.98：rolledAttack = 185 × 0.98 = 181.3</p>
+      <p>mitigation = 155 / (155 + 260) = 0.373</p>
+      <p>base = 181.3 × (1 - 0.373 × 0.90) = 120.5（高于保底 185 × 0.20 = 37）</p>
+      <p>若未暴击且未格挡，封顶为 min(120.5, 1000 × 0.24=240)，最终伤害约为 121。</p>
+    </div>
+  </section>
+
+  <section class="panel choose">
+    <h2>对阵配置</h2>
+    <div class="grid2">
+      <label>左侧英雄
+        <select v-model="leftHeroId">
+          <option v-for="h in heroes" :value="h.id">{{ h.name }} - {{ h.title }}</option>
+        </select>
+      </label>
+      <label>右侧英雄
+        <select v-model="rightHeroId">
+          <option v-for="h in heroes" :value="h.id">{{ h.name }} - {{ h.title }}</option>
+        </select>
+      </label>
+    </div>
+    <div class="actions">
+      <button @click="simulate" :disabled="loading || !leftHeroId || !rightHeroId">开始模拟</button>
+      <span v-if="loading">计算中...</span>
+    </div>
+  </section>
+
+  <section class="panel" v-if="leftHero && rightHero">
+    <h2>人物属性（一级+二级）</h2>
+    <div class="hero-grid">
+      <article class="hero-card" v-for="h in [leftHero, rightHero]" :key="h.id">
+        <h3>{{ h.name }} <small>{{ h.title }}</small></h3>
+        <div class="stat-text">
+          <p>体力 {{ h.primary.tili }} / 武力 {{ h.primary.wuli }} / 防御 {{ h.primary.fangyu }} / 内力 {{ h.primary.neili }}</p>
+          <p>暴击 {{ toPct(h.secondary.critRate) }} / 暴伤 {{ toPct(h.secondary.critDamageRate) }} / 命中 {{ toPct(h.secondary.hitRate) }}</p>
+          <p>闪避 {{ toPct(h.secondary.dodgeRate) }} / 格挡 {{ toPct(h.secondary.blockRate) }} / 格挡伤害 {{ toPct(h.secondary.blockDamage) }}</p>
+          <p>连击 {{ toPct(h.secondary.comboRate) }} / 重击 {{ toPct(h.secondary.heavyRate) }}</p>
+        </div>
+        <div class="bars">
+          <div class="bar"><span>武力</span><i :style="{width: h.primary.wuli + '%'}"></i></div>
+          <div class="bar"><span>防御</span><i :style="{width: h.primary.fangyu + '%'}"></i></div>
+          <div class="bar"><span>内力</span><i :style="{width: h.primary.neili + '%'}"></i></div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="panel" v-if="result">
+    <h2>战斗结果</h2>
+    <p>胜者：<b>{{ result.winner }}</b>，回合数：{{ result.rounds }}</p>
+    <div class="hp-track" v-if="result.logs.length">
+      <div class="hp-side">
+        <strong>{{ result.leftHero }}</strong>
+        <div class="hp-bar">
+          <i :style="{width: finalHpPercent('left') + '%'}"></i>
+          <span class="hp-label">{{ finalHp('left') }} / {{ maxHp('left') }}</span>
+        </div>
+      </div>
+      <div class="hp-side">
+        <strong>{{ result.rightHero }}</strong>
+        <div class="hp-bar">
+          <i :style="{width: finalHpPercent('right') + '%'}"></i>
+          <span class="hp-label">{{ finalHp('right') }} / {{ maxHp('right') }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="logs">
+      <div class="log" v-for="(l, idx) in result.logs" :key="idx">
+        <p><b>R{{ l.round }}</b> {{ l.actor }} - {{ l.action }}</p>
+        <p>{{ l.detail }}</p>
+        <p class="muted">{{ result.leftHero }}: {{ l.leftHp }} | {{ result.rightHero }}: {{ l.rightHp }}</p>
+        <div class="round-stats" v-if="l.leftState && l.rightState">
+          <div class="round-side">
+            <p><b>{{ result.leftHero }}</b>（回合结束）</p>
+            <div class="round-hp">
+              <div class="hp-bar">
+                <i :style="{width: hpPercent(l.leftState.currentHp, l.leftState.maxHp) + '%'}"></i>
+                <span class="hp-label">{{ l.leftState.currentHp }} / {{ l.leftState.maxHp }}</span>
+              </div>
+            </div>
+            <p>基础四维：体力 {{ l.leftState.tili }} / 武力 {{ l.leftState.wuli }} / 防御 {{ l.leftState.fangyu }} / 内力 {{ l.leftState.neili }}</p>
+            <p>怒气：{{ l.leftState.rage }} / {{ l.leftState.maxRage }}</p>
+            <p>战斗属性：攻击 {{ toInt(l.leftState.effectiveAttack) }}（增益 {{ buffText(l.leftState.attackBuffRate) }}）/ 防御 {{ toInt(l.leftState.effectiveDefense) }}（增益 {{ buffText(l.leftState.defenseBuffRate) }}）</p>
+            <p>二级：暴击 {{ toPct(l.leftState.critRate) }} / 暴伤 {{ toPct(l.leftState.critDamageRate) }} / 命中 {{ toPct(l.leftState.hitRate) }}</p>
+            <p>      闪避 {{ toPct(l.leftState.dodgeRate) }} / 格挡 {{ toPct(l.leftState.blockRate) }} / 格挡伤害 {{ toPct(l.leftState.blockDamage) }}</p>
+            <p>      连击 {{ toPct(l.leftState.comboRate) }} / 重击 {{ toPct(l.leftState.heavyRate) }} / 眩晕 {{ l.leftState.stunRounds }} / 中毒剩余 {{ l.leftState.poisonRounds }}</p>
+             <p>      濒死剩余 {{ l.leftState.nearDeathRounds }} / 已触发 {{ l.leftState.nearDeathUsed ? '是' : '否' }}</p>
+          </div>
+          <div class="round-side">
+            <p><b>{{ result.rightHero }}</b>（回合结束）</p>
+            <div class="round-hp">
+              <div class="hp-bar">
+                <i :style="{width: hpPercent(l.rightState.currentHp, l.rightState.maxHp) + '%'}"></i>
+                <span class="hp-label">{{ l.rightState.currentHp }} / {{ l.rightState.maxHp }}</span>
+              </div>
+            </div>
+            <p>基础四维：体力 {{ l.rightState.tili }} / 武力 {{ l.rightState.wuli }} / 防御 {{ l.rightState.fangyu }} / 内力 {{ l.rightState.neili }}</p>
+            <p>怒气：{{ l.rightState.rage }} / {{ l.rightState.maxRage }}</p>
+            <p>战斗属性：攻击 {{ toInt(l.rightState.effectiveAttack) }}（增益 {{ buffText(l.rightState.attackBuffRate) }}）/ 防御 {{ toInt(l.rightState.effectiveDefense) }}（增益 {{ buffText(l.rightState.defenseBuffRate) }}）</p>
+            <p>二级：暴击 {{ toPct(l.rightState.critRate) }} / 暴伤 {{ toPct(l.rightState.critDamageRate) }} / 命中 {{ toPct(l.rightState.hitRate) }}</p>
+            <p>      闪避 {{ toPct(l.rightState.dodgeRate) }} / 格挡 {{ toPct(l.rightState.blockRate) }} / 格挡伤害 {{ toPct(l.rightState.blockDamage) }}</p>
+            <p>      连击 {{ toPct(l.rightState.comboRate) }} / 重击 {{ toPct(l.rightState.heavyRate) }} / 眩晕 {{ l.rightState.stunRounds }} / 中毒剩余 {{ l.rightState.poisonRounds }}</p>
+             <p>      濒死剩余 {{ l.rightState.nearDeathRounds }} / 已触发 {{ l.rightState.nearDeathUsed ? '是' : '否' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+<script src="/app.js"></script>
+</body>
+</html>

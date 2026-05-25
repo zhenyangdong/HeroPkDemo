@@ -1,0 +1,16 @@
+{
+  "terminalRunCommand": "$terminalInputs = \"1`n2`n5`n1`nn`n\"; $terminalInputs | mvn spring-boot:run \"-Dspring-boot.run.arguments=--terminal\"",
+  "webRunCommand": "mvn spring-boot:run",
+  "apiProbeUrl": "http://localhost:8081/api/meta",
+  "frontendProbeUrl": "http://localhost:8081/",
+  "probePhrases": [
+    "体力",
+    "伤害",
+    "怒气"
+  ],
+  "autoDiscoverProbePhrases": true,
+  "minProbeCount": 2,
+  "webStartupWaitSeconds": 8,
+  "buildCommand": "mvn -q -DskipTests clean package",
+  "javaToolOptions": "-Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8"
+}

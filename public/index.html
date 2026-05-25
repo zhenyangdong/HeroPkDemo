@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>我的知识库</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5.5.1/github-markdown-light.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.min.css" />
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand">
+      <h1>📚 知识库</h1>
+      <p class="brand-sub">个人文章管理与检索</p>
+    </div>
+
+    <div class="user-bar">
+      <span id="current-user" class="muted">未登录</span>
+      <button id="logout-btn" type="button">退出</button>
+    </div>
+
+    <div class="search-box">
+      <input id="search" type="search" placeholder="🔍 搜索标题/标签/正文..." />
+    </div>
+
+    <div class="stats" id="stats"></div>
+
+    <div class="filter-group">
+      <h3>分类</h3>
+      <ul id="categories" class="filter-list"></ul>
+    </div>
+
+    <div class="filter-group">
+      <h3>文件类型</h3>
+      <div id="file-types" class="type-cloud"></div>
+    </div>
+
+    <div class="filter-group">
+      <h3>标签</h3>
+      <div id="tags" class="tag-cloud"></div>
+    </div>
+
+    <div class="filter-group upload-group">
+      <h3>上传文件</h3>
+      <input id="upload-category" type="text" placeholder="可选子目录，如 技术/后端" />
+      <div id="upload-dropzone" class="upload-dropzone">
+        拖拽文件到这里，或点击“选择文件”
+      </div>
+      <input
+        id="upload-files"
+        type="file"
+        multiple
+        hidden
+        accept=".md,.markdown,.txt,.html,.htm,.docx,.pptx,.xlsx,.pdf,.doc,.ppt,.xls"
+      />
+      <div class="upload-actions">
+        <button id="pick-files" class="refresh-btn" type="button">选择文件</button>
+        <button id="upload-btn" class="refresh-btn" type="button" disabled>上传</button>
+      </div>
+      <p id="upload-status" class="muted"></p>
+    </div>
+
+    <button id="refresh" class="refresh-btn" title="重新扫描 articles/ 目录">↻ 刷新文章</button>
+  </aside>
+
+  <main class="main">
+    <section class="qa-panel">
+      <h2>知识库问答</h2>
+      <p class="muted">输入自然语言问题，系统会基于文档内容生成回答并附上来源。</p>
+      <div class="qa-input-row">
+        <input id="qa-question" type="text" placeholder="例如：如何添加文章并让系统识别分类？" />
+        <button id="qa-ask" type="button">提问</button>
+      </div>
+      <div id="qa-result" class="qa-result" hidden>
+        <div id="qa-answer" class="qa-answer"></div>
+        <p id="qa-confidence" class="qa-confidence"></p>
+        <div id="qa-sources" class="qa-sources"></div>
+      </div>
+    </section>
+
+    <div id="view-list">
+      <div class="list-header">
+        <h2 id="list-title">全部文章</h2>
+        <span id="list-count" class="muted"></span>
+        <div class="view-toggle" role="group" aria-label="视图切换">
+          <button id="view-grid" class="view-btn active" type="button" title="卡片视图">▦</button>
+          <button id="view-list-btn" class="view-btn" type="button" title="列表视图">≡</button>
+        </div>
+      </div>
+      <div id="article-list" class="article-list view-grid"></div>
+      <div id="empty" class="empty" hidden>
+        <p>📭 还没有文章</p>
+        <p class="muted">把文件放到 <code>articles/</code> 目录，支持 <code>.md / .txt / .docx / .pptx / .xlsx / .pdf / .html</code></p>
+        <p class="muted">然后点击「↻ 刷新文章」</p>
+      </div>
+    </div>
+
+    <div id="view-detail" hidden>
+      <button id="back" class="back-btn">← 返回列表</button>
+      <article id="article-content" class="markdown-body"></article>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/common.min.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

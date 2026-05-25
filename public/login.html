@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>登录 - 知识库</title>
+  <link rel="stylesheet" href="/login.css" />
+</head>
+<body>
+  <div class="login-card">
+    <h1>📚 知识库</h1>
+    <p class="sub">请登录以访问内容</p>
+    <form id="login-form" autocomplete="off">
+      <label>用户名
+        <input id="username" type="text" required autofocus />
+      </label>
+      <label>密码
+        <input id="password" type="password" required />
+      </label>
+      <button type="submit" id="login-btn">登录</button>
+      <p id="login-error" class="error"></p>
+    </form>
+    <details class="hint">
+      <summary>测试账号</summary>
+      <ul>
+        <li>admin / admin123（管理员）</li>
+        <li>alice / alice123</li>
+        <li>bob / bob123</li>
+        <li>guest / guest123</li>
+      </ul>
+    </details>
+  </div>
+  <script src="/login.js"></script>
+</body>
+</html>
