@@ -102,6 +102,11 @@ public class TerminalBattleRunner implements ApplicationRunner {
     }
 
     private void printBattleLogs(BattleResult result) {
+        println("\n[天气影响]");
+        println(String.format("城市: %s | 天气: %s | 倍率: %.2f",
+            result.getWeatherCity(), result.getWeatherCondition(), result.getWeatherAbilityMultiplier()));
+        println(String.format("规则: %s", result.getWeatherEffect()));
+
         println("\n[战斗过程]");
         for (BattleResult.RoundLog log : result.getLogs()) {
             String line = String.format("R%02d %-4s %-8s | %s",

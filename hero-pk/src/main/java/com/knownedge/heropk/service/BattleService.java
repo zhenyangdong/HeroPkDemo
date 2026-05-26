@@ -25,9 +25,11 @@ public class BattleService {
     private static final int MAX_RAGE = 300;
 
     private final HeroDataService heroDataService;
+    private final WeatherImpactService weatherImpactService;
 
-    public BattleService(HeroDataService heroDataService) {
+    public BattleService(HeroDataService heroDataService, WeatherImpactService weatherImpactService) {
         this.heroDataService = heroDataService;
+        this.weatherImpactService = weatherImpactService;
     }
 
     public BattleResult simulate(BattleRequest request) {
@@ -39,12 +41,27 @@ public class BattleService {
         Fighter left = new Fighter(leftHero);
         Fighter right = new Fighter(rightHero);
 
+        WeatherImpactService.WeatherImpact weatherImpact = weatherImpactService.resolveTodayImpact(random);
+        left.applyWeatherAbility(weatherImpact.getAbilityMultiplier());
+        right.applyWeatherAbility(weatherImpact.getAbilityMultiplier());
+
         applyPassive(left, left.hero.getPassive());
         applyPassive(right, right.hero.getPassive());
 
         BattleResult result = new BattleResult();
         result.setLeftHero(left.hero.getName());
         result.setRightHero(right.hero.getName());
+        result.setWeatherCity(weatherImpact.getCity());
+        result.setWeatherCondition(weatherImpact.getCondition());
+        result.setWeatherEffect(weatherImpact.getEffectText());
+        result.setWeatherAbilityMultiplier(weatherImpact.getAbilityMultiplier());
+        String weatherDetail = "开战城市：" + weatherImpact.getCity()
+            + "，天气：" + weatherImpact.getCondition()
+            + "，温度 " + weatherImpact.getTemperatureC() + "C"
+            + "，体感 " + weatherImpact.getFeelsLikeC() + "C"
+            + "，湿度 " + weatherImpact.getHumidity() + "%"
+            + "，规则：" + weatherImpact.getEffectText();
+        log(result, 0, "系统", "天气", weatherDetail, left, right);
 
         Fighter attacker = left;
         Fighter defender = right;
@@ -387,6 +404,7 @@ public class BattleService {
         state.setPoisonRounds(f.poisonRounds());
         state.setNearDeathRounds(f.nearDeathRounds);
         state.setNearDeathUsed(f.nearDeathUsed);
+        state.setWeatherAbilityMultiplier(f.weatherAbilityMultiplier);
         return state;
     }
 
@@ -457,6 +475,7 @@ public class BattleService {
         int nearDeathRounds;
         boolean nearDeathUsed;
         String nearDeathTriggerMessage;
+        double weatherAbilityMultiplier;
         Map<String, Integer> cooldowns = new HashMap<>();
         List<BuffState> buffs = new ArrayList<>();
         List<PoisonState> poisons = new ArrayList<>();
@@ -471,6 +490,14 @@ public class BattleService {
             this.nearDeathRounds = 0;
             this.nearDeathUsed = false;
             this.nearDeathTriggerMessage = "";
+            this.weatherAbilityMultiplier = 1.0;
+        }
+
+        void applyWeatherAbility(double multiplier) {
+            double m = Math.max(0.5, Math.min(1.5, multiplier));
+            this.weatherAbilityMultiplier = m;
+            this.maxHp = Math.max(1, (int) Math.round(this.maxHp * m));
+            this.currentHp = Math.min(this.currentHp, this.maxHp);
         }
 
         boolean alive() {
@@ -594,12 +621,12 @@ public class BattleService {
 
         double effectiveAttack() {
             double base = 25 + 1.0 * hero.getPrimary().getWuli() + 0.6 * hero.getPrimary().getNeili();
-            return base * (1 + buffOf("attack"));
+            return base * weatherAbilityMultiplier * (1 + buffOf("attack"));
         }
 
         double effectiveDefense() {
             double base = 20 + 0.9 * hero.getPrimary().getFangyu() + 0.45 * hero.getPrimary().getNeili();
-            return base * (1 + buffOf("defense"));
+            return base * weatherAbilityMultiplier * (1 + buffOf("defense"));
         }
 
         double buffOf(String key) {

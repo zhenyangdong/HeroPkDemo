@@ -12,13 +12,16 @@ com\knownedge\heropk\service\HeroDataService$SkillTemplateConfig.class
 com\knownedge\heropk\service\BattleService$AttackOutcome.class
 com\knownedge\heropk\service\HeroDataService.class
 com\knownedge\heropk\model\SecondaryStats.class
+com\knownedge\heropk\service\WeatherImpactService$WeatherSnapshot.class
 com\knownedge\heropk\service\BattleService$ActionResult.class
 com\knownedge\heropk\service\BattleService.class
+com\knownedge\heropk\service\WeatherImpactService.class
 com\knownedge\heropk\service\HeroDataService$HeroSeed.class
 com\knownedge\heropk\model\Skill.class
 com\knownedge\heropk\model\BattleResult$RoundLog.class
 com\knownedge\heropk\controller\BattleController.class
 com\knownedge\heropk\model\BattleResult.class
+com\knownedge\heropk\service\WeatherImpactService$WeatherImpact.class
 com\knownedge\heropk\service\HeroDataService$SecondarySeed.class
 com\knownedge\heropk\HeroPkApplication.class
 com\knownedge\heropk\service\BattleService$PoisonState.class

@@ -8,6 +8,10 @@ public class BattleResult {
     private String rightHero;
     private String winner;
     private int rounds;
+    private String weatherCity;
+    private String weatherCondition;
+    private String weatherEffect;
+    private double weatherAbilityMultiplier;
     private List<RoundLog> logs = new ArrayList<>();
 
     public String getLeftHero() { return leftHero; }
@@ -18,6 +22,14 @@ public class BattleResult {
     public void setWinner(String winner) { this.winner = winner; }
     public int getRounds() { return rounds; }
     public void setRounds(int rounds) { this.rounds = rounds; }
+    public String getWeatherCity() { return weatherCity; }
+    public void setWeatherCity(String weatherCity) { this.weatherCity = weatherCity; }
+    public String getWeatherCondition() { return weatherCondition; }
+    public void setWeatherCondition(String weatherCondition) { this.weatherCondition = weatherCondition; }
+    public String getWeatherEffect() { return weatherEffect; }
+    public void setWeatherEffect(String weatherEffect) { this.weatherEffect = weatherEffect; }
+    public double getWeatherAbilityMultiplier() { return weatherAbilityMultiplier; }
+    public void setWeatherAbilityMultiplier(double weatherAbilityMultiplier) { this.weatherAbilityMultiplier = weatherAbilityMultiplier; }
     public List<RoundLog> getLogs() { return logs; }
     public void setLogs(List<RoundLog> logs) { this.logs = logs; }
 
@@ -80,6 +92,7 @@ public class BattleResult {
         private int poisonRounds;
         private int nearDeathRounds;
         private boolean nearDeathUsed;
+        private double weatherAbilityMultiplier;
 
         public int getCurrentHp() { return currentHp; }
         public void setCurrentHp(int currentHp) { this.currentHp = currentHp; }
@@ -141,5 +154,7 @@ public class BattleResult {
         public void setNearDeathRounds(int nearDeathRounds) { this.nearDeathRounds = nearDeathRounds; }
         public boolean isNearDeathUsed() { return nearDeathUsed; }
         public void setNearDeathUsed(boolean nearDeathUsed) { this.nearDeathUsed = nearDeathUsed; }
+        public double getWeatherAbilityMultiplier() { return weatherAbilityMultiplier; }
+        public void setWeatherAbilityMultiplier(double weatherAbilityMultiplier) { this.weatherAbilityMultiplier = weatherAbilityMultiplier; }
     }
 }
