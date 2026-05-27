@@ -92,6 +92,7 @@
   <section class="panel" v-if="result">
     <h2>战斗结果</h2>
     <p>胜者：<b>{{ result.winner }}</b>，回合数：{{ result.rounds }}</p>
+    <p v-if="result.balanceSummary">平衡机制：{{ result.balanceSummary }}</p>
     <div class="hp-track" v-if="result.logs.length">
       <div class="hp-side">
         <strong>{{ result.leftHero }}</strong>

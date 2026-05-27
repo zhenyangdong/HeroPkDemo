@@ -12,6 +12,7 @@ public class BattleResult {
     private String weatherCondition;
     private String weatherEffect;
     private double weatherAbilityMultiplier;
+    private String balanceSummary;
     private List<RoundLog> logs = new ArrayList<>();
 
     public String getLeftHero() { return leftHero; }
@@ -30,6 +31,8 @@ public class BattleResult {
     public void setWeatherEffect(String weatherEffect) { this.weatherEffect = weatherEffect; }
     public double getWeatherAbilityMultiplier() { return weatherAbilityMultiplier; }
     public void setWeatherAbilityMultiplier(double weatherAbilityMultiplier) { this.weatherAbilityMultiplier = weatherAbilityMultiplier; }
+    public String getBalanceSummary() { return balanceSummary; }
+    public void setBalanceSummary(String balanceSummary) { this.balanceSummary = balanceSummary; }
     public List<RoundLog> getLogs() { return logs; }
     public void setLogs(List<RoundLog> logs) { this.logs = logs; }
 

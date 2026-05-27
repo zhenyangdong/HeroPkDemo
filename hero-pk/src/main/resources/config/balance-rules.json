@@ -1,0 +1,26 @@
+{
+  "stable": {
+    "normalHitCap": 0.16,
+    "skillHitCap": 0.24,
+    "critChanceCap": 0.35,
+    "comboChanceCap": 0.22,
+    "heavyChanceCap": 0.16
+  },
+  "burst": {
+    "hpThreshold": 0.30,
+    "rageThreshold": 200,
+    "rageThresholdForKillShot": 260,
+    "durationRounds": 2,
+    "normalHitCap": 0.24,
+    "skillHitCap": 0.40,
+    "critChanceCap": 0.48,
+    "comboChanceCap": 0.30,
+    "heavyChanceCap": 0.22,
+    "killShotMaxChance": 0.03
+  },
+  "underdog": {
+    "powerGapThreshold": 0.18,
+    "hitBonus": 0.03,
+    "rageGainMultiplier": 1.08
+  }
+}

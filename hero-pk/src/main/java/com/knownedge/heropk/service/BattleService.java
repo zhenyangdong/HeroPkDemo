@@ -2,6 +2,7 @@ package com.knownedge.heropk.service;
 
 import com.knownedge.heropk.model.BattleRequest;
 import com.knownedge.heropk.model.BattleResult;
+import com.knownedge.heropk.model.BalanceRuntimeState;
 import com.knownedge.heropk.model.Hero;
 import com.knownedge.heropk.model.SecondaryStats;
 import com.knownedge.heropk.model.Skill;
@@ -26,10 +27,14 @@ public class BattleService {
 
     private final HeroDataService heroDataService;
     private final WeatherImpactService weatherImpactService;
+    private final BalanceRulesService balanceRulesService;
 
-    public BattleService(HeroDataService heroDataService, WeatherImpactService weatherImpactService) {
+    public BattleService(HeroDataService heroDataService,
+                         WeatherImpactService weatherImpactService,
+                         BalanceRulesService balanceRulesService) {
         this.heroDataService = heroDataService;
         this.weatherImpactService = weatherImpactService;
+        this.balanceRulesService = balanceRulesService;
     }
 
     public BattleResult simulate(BattleRequest request) {
@@ -49,12 +54,19 @@ public class BattleService {
         applyPassive(right, right.hero.getPassive());
 
         BattleResult result = new BattleResult();
+        BalanceRulesService.BalanceRules rules = balanceRulesService.getRules();
+        BalanceRuntimeState runtimeState = new BalanceRuntimeState();
         result.setLeftHero(left.hero.getName());
         result.setRightHero(right.hero.getName());
         result.setWeatherCity(weatherImpact.getCity());
         result.setWeatherCondition(weatherImpact.getCondition());
         result.setWeatherEffect(weatherImpact.getEffectText());
         result.setWeatherAbilityMultiplier(weatherImpact.getAbilityMultiplier());
+        boolean killShot = false;
+        result.setBalanceSummary("stable[caps=" + rules.stable.normalHitCap + "/" + rules.stable.skillHitCap + "]"
+            + ", burst[hp<=" + rules.burst.hpThreshold + ",rage>=" + rules.burst.rageThreshold + "]"
+            + ", underdog[gap>=" + rules.underdog.powerGapThreshold + "]"
+            + ", killShot=" + killShot);
         String weatherDetail = "开战城市：" + weatherImpact.getCity()
             + "，天气：" + weatherImpact.getCondition()
             + "，温度 " + weatherImpact.getTemperatureC() + "C"
@@ -89,11 +101,23 @@ public class BattleService {
                 continue;
             }
 
-            ActionResult actionResult = act(attacker, defender, random);
+            BalanceContext balanceContext = resolveBalanceContext(attacker, defender, rules, runtimeState);
+            if (balanceContext.note != null && !balanceContext.note.isEmpty()) {
+                log(result, round, "系统", "平衡机制", balanceContext.note, left, right);
+            }
+
+            ActionResult actionResult = act(attacker, defender, random, balanceContext);
             actionResult.detail = joinDetail(actionResult.detail, collectStateTriggers(attacker, defender));
             log(result, round, attacker.hero.getName(), actionResult.action, actionResult.detail, left, right);
 
             attacker.endTurn();
+            if (runtimeState.isBurstWindowActive()) {
+                runtimeState.setBurstWindowRoundsLeft(Math.max(0, runtimeState.getBurstWindowRoundsLeft() - 1));
+                if (runtimeState.getBurstWindowRoundsLeft() <= 0) {
+                    runtimeState.setBurstWindowActive(false);
+                    runtimeState.setBurstTriggerReason("");
+                }
+            }
             if (!defender.alive()) break;
 
             Fighter tmp = attacker;
@@ -110,7 +134,7 @@ public class BattleService {
         return result;
     }
 
-    private ActionResult act(Fighter attacker, Fighter defender, Random random) {
+    private ActionResult act(Fighter attacker, Fighter defender, Random random, BalanceContext balanceContext) {
         boolean trySkill = attacker.rage >= SKILL_RELEASE_RAGE && random.nextDouble() <= 0.25;
         if (trySkill) {
             Skill skill = chooseSkill(attacker, random);
@@ -118,14 +142,15 @@ public class BattleService {
                 int rageCost = attacker.consumeRage(skill.getNeiliCost());
 
                 if (skill.getType() == SkillType.ACTIVE_DAMAGE) {
-                    AttackOutcome outcome = skillAttack(attacker, defender, skill, random);
-                    String traitDetail = applyOffensiveTraits(attacker, defender, outcome, random);
+                    AttackOutcome outcome = skillAttack(attacker, defender, skill, random, balanceContext);
+                    String traitDetail = applyOffensiveTraits(attacker, defender, outcome, random, balanceContext);
                     attacker.setCooldown(skill);
                     int enemyRageGain = outcome.crit ? defender.gainRageOnCritTaken() : 0;
                     return new ActionResult(
                             "武功-伤害",
                             renderDamageDetail(outcome, skill.getName())
                                     + traitDetail
+                                    + (balanceContext.underdogBoost ? "，弱势修正已生效" : "")
                                     + "，消耗怒气 " + rageCost + "（自身怒气 " + attacker.rage + "）"
                                     + (enemyRageGain > 0 ? "，对手受暴击怒气 +" + enemyRageGain + "（对手怒气 " + defender.rage + "）" : "")
                     );
@@ -166,14 +191,15 @@ public class BattleService {
         }
 
         String prefix = trySkill ? "怒气已达释放阈值但当前无可释放武功，" : "";
-        AttackOutcome outcome = normalAttack(attacker, defender, random);
-        String traitDetail = applyOffensiveTraits(attacker, defender, outcome, random);
-        int selfRageGain = attacker.gainRageByDamage(outcome.damage);
+        AttackOutcome outcome = normalAttack(attacker, defender, random, balanceContext);
+        String traitDetail = applyOffensiveTraits(attacker, defender, outcome, random, balanceContext);
+        int selfRageGain = attacker.gainRageByDamage(outcome.damage, balanceContext.rageGainMultiplier);
         int enemyRageGain = outcome.crit ? defender.gainRageOnCritTaken() : 0;
         return new ActionResult(
                 "普通攻击",
                 prefix + renderDamageDetail(outcome, null)
                         + traitDetail
+                + (balanceContext.underdogBoost ? "，弱势修正已生效" : "")
                         + "，自身怒气 +" + selfRageGain + "（自身怒气 " + attacker.rage + "）"
                         + (enemyRageGain > 0 ? "，对手受暴击怒气 +" + enemyRageGain + "（对手怒气 " + defender.rage + "）" : "")
         );
@@ -194,7 +220,7 @@ public class BattleService {
         return base + "，" + extra;
     }
 
-    private String applyOffensiveTraits(Fighter attacker, Fighter defender, AttackOutcome outcome, Random random) {
+    private String applyOffensiveTraits(Fighter attacker, Fighter defender, AttackOutcome outcome, Random random, BalanceContext balanceContext) {
         if (!outcome.hit || outcome.damage <= 0 || !defender.alive()) {
             return "";
         }
@@ -202,9 +228,9 @@ public class BattleService {
         SecondaryStats sec = attacker.effectiveSecondary();
         List<String> parts = new ArrayList<String>();
 
-        if (random.nextDouble() < clamp(sec.getComboRate(), 0.0, 0.40)) {
+        if (random.nextDouble() < clamp(sec.getComboRate(), 0.0, balanceContext.comboChanceCap)) {
             AttackOutcome comboRoll = calculateDamage(attacker, defender, random,
-                    attacker.effectiveAttack(), defender.effectiveDefense(), 0.45, 0.23, 0.14);
+                attacker.effectiveAttack(), defender.effectiveDefense(), 0.45, 0.23, balanceContext.normalHitCap, balanceContext);
             if (comboRoll.hit && comboRoll.damage > 0) {
                 int comboDamage = Math.max(1, (int) Math.round(comboRoll.damage * 0.5));
                 defender.currentHp = Math.max(0, defender.currentHp - comboDamage);
@@ -215,7 +241,7 @@ public class BattleService {
             }
         }
 
-        if (defender.alive() && random.nextDouble() < clamp(sec.getHeavyRate(), 0.0, 0.35)) {
+        if (defender.alive() && random.nextDouble() < clamp(sec.getHeavyRate(), 0.0, balanceContext.heavyChanceCap)) {
             defender.stunRounds = Math.max(defender.stunRounds, 1);
             parts.add("触发重击，使对手眩晕 1 回合");
         }
@@ -267,12 +293,12 @@ public class BattleService {
         return skills.get(random.nextInt(skills.size()));
     }
 
-    private AttackOutcome normalAttack(Fighter attacker, Fighter defender, Random random) {
+    private AttackOutcome normalAttack(Fighter attacker, Fighter defender, Random random, BalanceContext balanceContext) {
         return calculateAndApplyDamage(attacker, defender, random,
-                attacker.effectiveAttack(), defender.effectiveDefense(), 0.45, 0.23, 0.14);
+                attacker.effectiveAttack(), defender.effectiveDefense(), 0.45, 0.23, balanceContext.normalHitCap, balanceContext);
     }
 
-    private AttackOutcome skillAttack(Fighter attacker, Fighter defender, Skill skill, Random random) {
+    private AttackOutcome skillAttack(Fighter attacker, Fighter defender, Skill skill, Random random, BalanceContext balanceContext) {
         double atk = attacker.effectiveAttack();
         double inner = attacker.hero.getPrimary().getNeili();
         double defense = defender.effectiveDefense();
@@ -281,14 +307,14 @@ public class BattleService {
         double effectiveDefense = defense * (0.62 - penetrate * 0.40);
         double floor = atk * 0.30 + inner * 0.10;
         double adjusted = Math.max(basePower, floor);
-        return calculateAndApplyDamage(attacker, defender, random, adjusted, effectiveDefense, 0.62, 0.26, 0.24);
+        return calculateAndApplyDamage(attacker, defender, random, adjusted, effectiveDefense, 0.62, 0.26, balanceContext.skillHitCap, balanceContext);
     }
 
     private AttackOutcome calculateAndApplyDamage(Fighter attacker, Fighter defender, Random random,
                                                   double attackValue, double defenseValue, double randomScale,
-                                                  double minDamageRatio, double capRatio) {
+                                                  double minDamageRatio, double capRatio, BalanceContext balanceContext) {
         AttackOutcome outcome = calculateDamage(attacker, defender, random,
-                attackValue, defenseValue, randomScale, minDamageRatio, capRatio);
+                attackValue, defenseValue, randomScale, minDamageRatio, capRatio, balanceContext);
         if (outcome.hit && outcome.damage > 0) {
             defender.currentHp = Math.max(0, defender.currentHp - outcome.damage);
             defender.tryTriggerNearDeath();
@@ -298,11 +324,11 @@ public class BattleService {
 
     private AttackOutcome calculateDamage(Fighter attacker, Fighter defender, Random random,
                                           double attackValue, double defenseValue, double randomScale,
-                                          double minDamageRatio, double capRatio) {
+                                          double minDamageRatio, double capRatio, BalanceContext balanceContext) {
         SecondaryStats a = attacker.effectiveSecondary();
         SecondaryStats d = defender.effectiveSecondary();
 
-        double hitChance = clamp(0.72 + (a.getHitRate() - d.getDodgeRate()) * 0.20, 0.35, 0.99);
+        double hitChance = clamp(0.72 + (a.getHitRate() + balanceContext.hitBonus - d.getDodgeRate()) * 0.20, 0.35, 0.99);
         if (random.nextDouble() > hitChance) {
             return AttackOutcome.miss();
         }
@@ -313,7 +339,7 @@ public class BattleService {
         double base = rolledAttack * (1 - mitigation * 0.90);
         base = Math.max(base, attackValue * minDamageRatio);
 
-        double critChance = clamp(a.getCritRate() - d.getBlockRate() * 0.35, 0.02, 0.45);
+        double critChance = clamp(a.getCritRate() - d.getBlockRate() * 0.35, 0.02, balanceContext.critChanceCap);
         boolean crit = random.nextDouble() < critChance;
         if (crit) {
             base = base * clamp(a.getCritDamageRate(), 1.05, 1.60);
@@ -329,6 +355,60 @@ public class BattleService {
         double capped = Math.min(base, defender.maxHp * capRatio);
         int damage = (int) Math.max(1, Math.round(capped));
         return AttackOutcome.hit(damage, crit, block);
+    }
+
+    private BalanceContext resolveBalanceContext(Fighter attacker,
+                                                 Fighter defender,
+                                                 BalanceRulesService.BalanceRules rules,
+                                                 BalanceRuntimeState runtimeState) {
+        BalanceContext ctx = new BalanceContext();
+        ctx.normalHitCap = rules.stable.normalHitCap;
+        ctx.skillHitCap = rules.stable.skillHitCap;
+        ctx.critChanceCap = rules.stable.critChanceCap;
+        ctx.comboChanceCap = rules.stable.comboChanceCap;
+        ctx.heavyChanceCap = rules.stable.heavyChanceCap;
+        ctx.hitBonus = 0.0;
+        ctx.rageGainMultiplier = 1.0;
+
+        boolean shouldOpenBurst = !runtimeState.isBurstWindowActive()
+                && (attacker.currentHp <= (int) Math.floor(attacker.maxHp * rules.burst.hpThreshold)
+                || defender.currentHp <= (int) Math.floor(defender.maxHp * rules.burst.hpThreshold)
+                || attacker.rage >= rules.burst.rageThreshold);
+        if (shouldOpenBurst) {
+            runtimeState.setBurstWindowActive(true);
+            runtimeState.setBurstWindowRoundsLeft(rules.burst.durationRounds);
+            String reason = attacker.rage >= rules.burst.rageThreshold ? "怒气达到窗口阈值" : "血量达到窗口阈值";
+            runtimeState.setBurstTriggerReason(reason);
+            ctx.note = "爆发窗口开启：" + reason + "，持续 " + rules.burst.durationRounds + " 回合";
+        }
+
+        if (runtimeState.isBurstWindowActive()) {
+            ctx.burstActive = true;
+            ctx.normalHitCap = rules.burst.normalHitCap;
+            ctx.skillHitCap = rules.burst.skillHitCap;
+            ctx.critChanceCap = rules.burst.critChanceCap;
+            ctx.comboChanceCap = rules.burst.comboChanceCap;
+            ctx.heavyChanceCap = rules.burst.heavyChanceCap;
+            if (ctx.note == null || ctx.note.isEmpty()) {
+                ctx.note = "爆发窗口生效中：剩余 " + runtimeState.getBurstWindowRoundsLeft() + " 回合";
+            }
+        }
+
+        double atkPower = attacker.effectiveAttack() + attacker.effectiveDefense() + attacker.currentHp;
+        double defPower = defender.effectiveAttack() + defender.effectiveDefense() + defender.currentHp;
+        if (defPower > 0) {
+            double gap = (defPower - atkPower) / defPower;
+            if (gap >= rules.underdog.powerGapThreshold) {
+                ctx.underdogBoost = true;
+                ctx.hitBonus = rules.underdog.hitBonus;
+                ctx.rageGainMultiplier = rules.underdog.rageGainMultiplier;
+                ctx.note = (ctx.note == null || ctx.note.isEmpty())
+                        ? "劣势机会修正生效：命中+" + Math.round(ctx.hitBonus * 100) + "% 回怒x" + ctx.rageGainMultiplier
+                        : ctx.note + "；劣势机会修正生效";
+            }
+        }
+
+        return ctx;
     }
 
     private String renderDamageDetail(AttackOutcome outcome, String skillName) {
@@ -526,9 +606,9 @@ public class BattleService {
             return consumed;
         }
 
-        int gainRageByDamage(int damage) {
+        int gainRageByDamage(int damage, double multiplier) {
             if (damage <= 0) return 0;
-            int gain = (int) Math.round(damage * 0.25);
+            int gain = (int) Math.round(damage * 0.25 * Math.max(1.0, multiplier));
             gain = Math.max(5, Math.min(40, gain));
             return addRage(gain);
         }
@@ -652,5 +732,18 @@ public class BattleService {
             this.damage = damage;
             this.rounds = rounds;
         }
+    }
+
+    private static class BalanceContext {
+        double normalHitCap;
+        double skillHitCap;
+        double critChanceCap;
+        double comboChanceCap;
+        double heavyChanceCap;
+        double hitBonus;
+        double rageGainMultiplier;
+        boolean burstActive;
+        boolean underdogBoost;
+        String note;
     }
 }
