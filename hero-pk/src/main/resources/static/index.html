@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Global System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/styles.css" />
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 </head>
@@ -11,7 +14,7 @@
 <div id="app" class="layout">
   <header class="top">
     <h1>金庸英雄 PK 系统</h1>
-    <p>回合制，25% 主动技能触发，75% 普通攻击</p>
+    <p>江湖卷轴实况：逐回合书写，胜负随笔势展开</p>
   </header>
 
   <section class="panel rules" v-if="meta">
@@ -89,19 +92,64 @@
     </div>
   </section>
 
-  <section class="panel" v-if="result">
-    <h2>战斗结果</h2>
-    <p>胜者：<b>{{ result.winner }}</b>，回合数：{{ result.rounds }}</p>
-    <p v-if="result.balanceSummary">平衡机制：{{ result.balanceSummary }}</p>
+  <section class="panel battle-theater" v-if="result">
+    <h2>江湖卷轴</h2>
+    <div class="theater-head">
+      <p class="theater-summary">对阵：{{ result.leftHero }} vs {{ result.rightHero }} ｜ 当前回合 {{ currentRound }} / {{ totalRounds }}</p>
+      <p class="theater-progress-text">卷轴进度 {{ progressPercent }}%</p>
+    </div>
+    <div class="progress-track">
+      <i :style="{ width: progressPercent + '%' }"></i>
+    </div>
+    <p class="balance-note" v-if="result.balanceSummary">平衡机制：{{ result.balanceSummary }}</p>
+
+    <div class="scroll-controls">
+      <button @click="togglePlayback" :disabled="battleFinished || !visibleLogs.length && loading">{{ playing ? '暂停书写' : '继续书写' }}</button>
+      <button @click="stepBattle" :disabled="battleFinished || loading">单步一回合</button>
+      <button @click="replayBattle" :disabled="loading">重放卷轴</button>
+      <div class="speed-switch">
+        <span>速度</span>
+        <button @click="changeSpeed(1000)" :class="{ active: playbackSpeed === 1000 }">慢</button>
+        <button @click="changeSpeed(700)" :class="{ active: playbackSpeed === 700 }">中</button>
+        <button @click="changeSpeed(420)" :class="{ active: playbackSpeed === 420 }">快</button>
+      </div>
+    </div>
+
+    <div class="event-banner" :class="currentEventTone">
+      <span class="event-seal">战况播报</span>
+      <p>{{ currentEvent }}</p>
+    </div>
+
+    <div class="duel-stage">
+      <div class="fighter-side left" :class="leftActionClass">
+        <p class="fighter-name">{{ result.leftHero }}</p>
+        <div class="fighter-avatar">
+          <img :src="avatarFor('left')" :alt="result.leftHero + '头像'" loading="lazy" />
+        </div>
+      </div>
+      <div class="stage-center">
+        <span class="cross-mark">侠</span>
+      </div>
+      <div class="fighter-side right" :class="rightActionClass">
+        <p class="fighter-name">{{ result.rightHero }}</p>
+        <div class="fighter-avatar">
+          <img :src="avatarFor('right')" :alt="result.rightHero + '头像'" loading="lazy" />
+        </div>
+      </div>
+      <div class="stage-fx" v-if="stageFxClass" :class="[stageFxClass, 'owner-' + stageFxOwner]">
+        <span>{{ stageFxText }}</span>
+      </div>
+    </div>
+
     <div class="hp-track" v-if="result.logs.length">
-      <div class="hp-side">
+      <div class="hp-side" :class="leftPulseClass">
         <strong>{{ result.leftHero }}</strong>
         <div class="hp-bar">
           <i :style="{width: finalHpPercent('left') + '%'}"></i>
           <span class="hp-label">{{ finalHp('left') }} / {{ maxHp('left') }}</span>
         </div>
       </div>
-      <div class="hp-side">
+      <div class="hp-side" :class="rightPulseClass">
         <strong>{{ result.rightHero }}</strong>
         <div class="hp-bar">
           <i :style="{width: finalHpPercent('right') + '%'}"></i>
@@ -109,45 +157,33 @@
         </div>
       </div>
     </div>
-    <div class="logs">
-      <div class="log" v-for="(l, idx) in result.logs" :key="idx">
-        <p><b>R{{ l.round }}</b> {{ l.actor }} - {{ l.action }}</p>
-        <p>{{ l.detail }}</p>
-        <p class="muted">{{ result.leftHero }}: {{ l.leftHp }} | {{ result.rightHero }}: {{ l.rightHp }}</p>
-        <div class="round-stats" v-if="l.leftState && l.rightState">
-          <div class="round-side">
-            <p><b>{{ result.leftHero }}</b>（回合结束）</p>
-            <div class="round-hp">
-              <div class="hp-bar">
-                <i :style="{width: hpPercent(l.leftState.currentHp, l.leftState.maxHp) + '%'}"></i>
-                <span class="hp-label">{{ l.leftState.currentHp }} / {{ l.leftState.maxHp }}</span>
-              </div>
-            </div>
-            <p>基础四维：体力 {{ l.leftState.tili }} / 武力 {{ l.leftState.wuli }} / 防御 {{ l.leftState.fangyu }} / 内力 {{ l.leftState.neili }}</p>
-            <p>怒气：{{ l.leftState.rage }} / {{ l.leftState.maxRage }}</p>
-            <p>战斗属性：攻击 {{ toInt(l.leftState.effectiveAttack) }}（增益 {{ buffText(l.leftState.attackBuffRate) }}）/ 防御 {{ toInt(l.leftState.effectiveDefense) }}（增益 {{ buffText(l.leftState.defenseBuffRate) }}）</p>
-            <p>二级：暴击 {{ toPct(l.leftState.critRate) }} / 暴伤 {{ toPct(l.leftState.critDamageRate) }} / 命中 {{ toPct(l.leftState.hitRate) }}</p>
-            <p>      闪避 {{ toPct(l.leftState.dodgeRate) }} / 格挡 {{ toPct(l.leftState.blockRate) }} / 格挡伤害 {{ toPct(l.leftState.blockDamage) }}</p>
-            <p>      连击 {{ toPct(l.leftState.comboRate) }} / 重击 {{ toPct(l.leftState.heavyRate) }} / 眩晕 {{ l.leftState.stunRounds }} / 中毒剩余 {{ l.leftState.poisonRounds }}</p>
-             <p>      濒死剩余 {{ l.leftState.nearDeathRounds }} / 已触发 {{ l.leftState.nearDeathUsed ? '是' : '否' }}</p>
-          </div>
-          <div class="round-side">
-            <p><b>{{ result.rightHero }}</b>（回合结束）</p>
-            <div class="round-hp">
-              <div class="hp-bar">
-                <i :style="{width: hpPercent(l.rightState.currentHp, l.rightState.maxHp) + '%'}"></i>
-                <span class="hp-label">{{ l.rightState.currentHp }} / {{ l.rightState.maxHp }}</span>
-              </div>
-            </div>
-            <p>基础四维：体力 {{ l.rightState.tili }} / 武力 {{ l.rightState.wuli }} / 防御 {{ l.rightState.fangyu }} / 内力 {{ l.rightState.neili }}</p>
-            <p>怒气：{{ l.rightState.rage }} / {{ l.rightState.maxRage }}</p>
-            <p>战斗属性：攻击 {{ toInt(l.rightState.effectiveAttack) }}（增益 {{ buffText(l.rightState.attackBuffRate) }}）/ 防御 {{ toInt(l.rightState.effectiveDefense) }}（增益 {{ buffText(l.rightState.defenseBuffRate) }}）</p>
-            <p>二级：暴击 {{ toPct(l.rightState.critRate) }} / 暴伤 {{ toPct(l.rightState.critDamageRate) }} / 命中 {{ toPct(l.rightState.hitRate) }}</p>
-            <p>      闪避 {{ toPct(l.rightState.dodgeRate) }} / 格挡 {{ toPct(l.rightState.blockRate) }} / 格挡伤害 {{ toPct(l.rightState.blockDamage) }}</p>
-            <p>      连击 {{ toPct(l.rightState.comboRate) }} / 重击 {{ toPct(l.rightState.heavyRate) }} / 眩晕 {{ l.rightState.stunRounds }} / 中毒剩余 {{ l.rightState.poisonRounds }}</p>
-             <p>      濒死剩余 {{ l.rightState.nearDeathRounds }} / 已触发 {{ l.rightState.nearDeathUsed ? '是' : '否' }}</p>
-          </div>
-        </div>
+    <div class="scroll-log-list">
+      <article class="scroll-log" :class="logTone(l)" v-for="(l, idx) in visibleLogs" :key="idx">
+        <p class="scroll-head"><b>第 {{ l.round }} 回</b> · {{ l.actor }} · {{ l.action }}</p>
+        <p class="scroll-detail">{{ l.detail }}</p>
+        <p class="scroll-hp">{{ result.leftHero }}：{{ l.leftHp }} ｜ {{ result.rightHero }}：{{ l.rightHp }}</p>
+      </article>
+      <div class="scroll-waiting" v-if="!battleFinished">
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <p>卷轴书写中...</p>
+      </div>
+      <div class="scroll-final" v-if="battleFinished">
+        <h3>胜负已定：{{ result.winner }}</h3>
+        <p>全卷共 {{ result.rounds }} 回，江湖见证已封存。</p>
+      </div>
+    </div>
+    <div class="round-stats" v-if="visibleLogs.length">
+      <div class="round-side" v-if="visibleLogs[visibleLogs.length - 1].leftState">
+        <p><b>{{ result.leftHero }}</b>（最新状态）</p>
+        <p>怒气：{{ visibleLogs[visibleLogs.length - 1].leftState.rage }} / {{ visibleLogs[visibleLogs.length - 1].leftState.maxRage }}</p>
+        <p>眩晕 {{ visibleLogs[visibleLogs.length - 1].leftState.stunRounds }} / 中毒 {{ visibleLogs[visibleLogs.length - 1].leftState.poisonRounds }}</p>
+      </div>
+      <div class="round-side" v-if="visibleLogs[visibleLogs.length - 1].rightState">
+        <p><b>{{ result.rightHero }}</b>（最新状态）</p>
+        <p>怒气：{{ visibleLogs[visibleLogs.length - 1].rightState.rage }} / {{ visibleLogs[visibleLogs.length - 1].rightState.maxRage }}</p>
+        <p>眩晕 {{ visibleLogs[visibleLogs.length - 1].rightState.stunRounds }} / 中毒 {{ visibleLogs[visibleLogs.length - 1].rightState.poisonRounds }}</p>
       </div>
     </div>
   </section>
