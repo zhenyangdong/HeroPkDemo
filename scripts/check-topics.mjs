@@ -1,4 +1,3 @@
-// scripts/check-topics.mjs
 import fs from 'fs';
 
 const raw = fs.readFileSync('./data/topics.json', 'utf8');
