@@ -1,4 +1,5 @@
 // ========== 各格式提取器 ==========
+const fs = require('fs');
 const matter = require('gray-matter');
 const { marked } = require('marked');
 const mammoth = require('mammoth');

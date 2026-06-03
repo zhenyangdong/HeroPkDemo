@@ -418,7 +418,11 @@ app.post('/api/qa', async (req, res) => {
         question,
         answer: '在当前主题下未找到足够证据，请补充文档或切换主题后重试。',
         confidence: 0,
+        evidence: [],
         sources: [],
+        supplementalInference: [],
+        insufficient: true,
+        topicId,
       });
     }
 
@@ -455,11 +459,25 @@ app.post('/api/qa', async (req, res) => {
       score: Number(item.score.toFixed(3)),
     }));
 
+    const evidence = topRanked.map((item) => ({
+      snippet: item.paragraph.slice(0, 220),
+      source: `${item.article.relPath}`,
+      score: Number(item.score.toFixed(3)),
+      reason: 'keyword-overlap',
+    }));
+
+    const insufficient = evidence.length === 0;
+    const confidence = insufficient ? 0 : Number(composed.confidence.toFixed(2));
+
     res.json({
       question,
       answer: composed.answer,
-      confidence: Number(composed.confidence.toFixed(2)),
+      confidence,
+      evidence,
       sources,
+      supplementalInference: [],
+      insufficient,
+      topicId,
     });
   } catch (e) {
     res.status(500).json({ error: e.message });
