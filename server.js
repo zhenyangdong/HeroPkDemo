@@ -16,6 +16,7 @@ const { userConfig, createSession, getSession, requireAuth } = require('./module
 const { loadComments, saveComments, sanitizeCommentHtml } = require('./modules/comments');
 const { EXTRACTORS, extractUnsupported, extractAutoTags } = require('./modules/parsers');
 const { tokenizeForQA, paragraphCandidates, scoreParagraph, buildAnswerFromParagraphs } = require('./modules/qa');
+const { listTopics, validateTopicId, setArticleTopic, getArticleTopicMap } = require('./modules/topics');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -229,6 +230,11 @@ app.get('/api/me', (req, res) => {
   res.json({ user: session });
 });
 
+app.get('/api/topics', (_req, res) => {
+  const items = listTopics();
+  res.json({ total: items.length, items });
+});
+
 // 其他 API 全部要求登录
 app.use('/api', (req, res, next) => {
   if (
@@ -243,12 +249,14 @@ app.use('/api', (req, res, next) => {
 app.get('/api/articles', async (req, res) => {
   try {
     const all = await getArticles();
-    const { q, tag, category, type } = req.query;
+    const { q, tag, category, type, topic } = req.query;
+    const topicMap = getArticleTopicMap();
     let list = all;
 
     if (category) list = list.filter((a) => a.category === category);
     if (tag) list = list.filter((a) => a.tags.includes(tag));
     if (type) list = list.filter((a) => a.fileType === type);
+    if (topic) list = list.filter((a) => topicMap[a.relPath] === String(topic));
     if (q) {
       const kw = String(q).toLowerCase();
       list = list.filter((a) =>
@@ -333,6 +341,12 @@ app.post('/api/upload', upload.array('files', 20), async (req, res) => {
       return res.status(400).json({ error: '没有接收到文件' });
     }
 
+    const topicId = String(req.body?.topicId || '').trim();
+    if (!topicId) {
+      return res.status(400).json({ error: 'topicId is required' });
+    }
+    validateTopicId(topicId);
+
     const safeCategory = sanitizeCategoryPath(req.body?.category || '');
     const targetDir = safeCategory
       ? path.join(ARTICLES_DIR, safeCategory)
@@ -359,7 +373,9 @@ app.post('/api/upload', upload.array('files', 20), async (req, res) => {
 
       const targetPath = uniqueFilePath(targetDir, file.originalname || 'untitled');
       fs.writeFileSync(targetPath, file.buffer);
-      saved.push(path.relative(ARTICLES_DIR, targetPath).replace(/\\/g, '/'));
+      const relPath = path.relative(ARTICLES_DIR, targetPath).replace(/\\/g, '/');
+      setArticleTopic(relPath, topicId);
+      saved.push(relPath);
     }
 
     await getArticles(true);
