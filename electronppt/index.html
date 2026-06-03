@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Electron PPT Viewer</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <h1>PPT 本地查看器</h1>
+        <p>导入后按页查看原始幻灯片视觉内容</p>
+      </div>
+      <button id="importBtn" class="primary-btn">导入 PPT / PPTX</button>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <h2>页面导航</h2>
+        <p id="metaText" class="meta">尚未导入文件</p>
+        <div id="pageList" class="page-list"></div>
+        <div class="recent-block">
+          <h3>最近导入</h3>
+          <div id="recentList" class="recent-list"></div>
+        </div>
+      </aside>
+
+      <section class="viewer-panel">
+        <div class="viewer-toolbar">
+          <button id="prevBtn" class="ghost-btn" disabled>上一页</button>
+          <span id="pageInfo">- / -</span>
+          <button id="nextBtn" class="ghost-btn" disabled>下一页</button>
+        </div>
+        <div class="viewer-canvas">
+          <img id="slideImage" class="slide-image" alt="PPT 页面预览" />
+        </div>
+      </section>
+    </main>
+
+    <footer id="statusBar" class="status">准备就绪</footer>
+
+    <script src="./renderer.js"></script>
+  </body>
+</html>
