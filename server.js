@@ -17,6 +17,8 @@ const { loadComments, saveComments, sanitizeCommentHtml } = require('./modules/c
 const { EXTRACTORS, extractUnsupported, extractAutoTags } = require('./modules/parsers');
 const { tokenizeForQA, paragraphCandidates, scoreParagraph, buildAnswerFromParagraphs } = require('./modules/qa');
 const { listTopics, validateTopicId, setArticleTopic, getArticleTopicMap } = require('./modules/topics');
+const { normalizeArticleToPassages } = require('./modules/normalize');
+const { retrieveTopPassages } = require('./modules/retrieval');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -389,9 +391,14 @@ app.post('/api/upload', upload.array('files', 20), async (req, res) => {
 app.post('/api/qa', async (req, res) => {
   try {
     const question = String(req.body?.question || '').trim();
+    const topicId = String(req.body?.topicId || '').trim();
     if (!question) {
       return res.status(400).json({ error: 'question 不能为空' });
     }
+    if (!topicId) {
+      return res.status(400).json({ error: 'topicId is required' });
+    }
+    validateTopicId(topicId);
 
     const queryText = normalizeForSearch(question);
     const queryTokens = tokenizeForQA(queryText);
@@ -399,9 +406,27 @@ app.post('/api/qa', async (req, res) => {
       return res.status(400).json({ error: '问题缺少有效关键词' });
     }
 
-    const articles = await getArticles();
+    const all = await getArticles();
+    const topicMap = getArticleTopicMap();
+    const articles = all.filter((article) => topicMap[article.relPath] === topicId);
+
+    const passages = articles.flatMap((article) => normalizeArticleToPassages(article));
+    const topPassages = retrieveTopPassages(question, passages, 5);
+
+    if (!topPassages.length) {
+      return res.json({
+        question,
+        answer: '在当前主题下未找到足够证据，请补充文档或切换主题后重试。',
+        confidence: 0,
+        sources: [],
+      });
+    }
+
+    const selectedRelPaths = new Set(topPassages.map((item) => item.relPath));
+    const selectedArticles = articles.filter((article) => selectedRelPaths.has(article.relPath));
+
     const ranked = [];
-    for (const article of articles) {
+    for (const article of selectedArticles) {
       const paras = paragraphCandidates(article);
       for (const paragraph of paras) {
         const score = scoreParagraph(queryTokens, queryText, paragraph);
