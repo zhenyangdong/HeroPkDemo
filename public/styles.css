@@ -104,6 +104,16 @@ body {
   font-size: 13px;
 }
 
+#upload-topic {
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 13px;
+  background: #fff;
+}
+
 .upload-dropzone {
   border: 1px dashed #93c5fd;
   background: #eff6ff;
@@ -157,9 +167,17 @@ body {
 
 .qa-input-row {
   display: grid;
-  grid-template-columns: 1fr 100px;
+  grid-template-columns: 180px 1fr 100px;
   gap: 10px;
   margin-top: 10px;
+}
+
+#qa-topic {
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fff;
 }
 
 .qa-input-row input {

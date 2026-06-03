@@ -1,6 +1,7 @@
 /* 知识库前端逻辑（多格式版） */
 const state = {
   articles: [],
+  topics: [],
   filterCategory: null,
   filterTag: null,
   filterType: null,
@@ -234,6 +235,24 @@ async function loadList() {
       deleteArticle(btn.dataset.id);
     };
   });
+}
+
+async function loadTopics() {
+  const data = await api('/api/topics');
+  state.topics = Array.isArray(data.items) ? data.items : [];
+
+  const qaTopic = document.getElementById('qa-topic');
+  const uploadTopic = document.getElementById('upload-topic');
+
+  const options = state.topics.map((t) => `<option value="${escapeHtml(t.topicId)}">${escapeHtml(t.name)}</option>`).join('');
+
+  if (qaTopic) {
+    qaTopic.innerHTML = options;
+  }
+
+  if (uploadTopic) {
+    uploadTopic.innerHTML = options;
+  }
 }
 
 function setViewMode(mode) {
@@ -549,10 +568,16 @@ function bindQAEvents() {
   const input = $('#qa-question');
   const askBtn = $('#qa-ask');
   const result = $('#qa-result');
+  const qaTopic = $('#qa-topic');
 
   async function askQuestion() {
     const question = input.value.trim();
+    const topicId = qaTopic?.value || '';
     if (!question) return;
+    if (!topicId) {
+      alert('请先选择提问主题');
+      return;
+    }
 
     askBtn.disabled = true;
     askBtn.textContent = '思考中...';
@@ -565,11 +590,22 @@ function bindQAEvents() {
       const data = await api('/api/qa', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify({ question, topicId }),
       });
 
       $('#qa-answer').innerHTML = formatAnswerHtml(data.answer || '未获得回答');
       $('#qa-confidence').textContent = `置信度: ${Math.round((data.confidence || 0) * 100)}%`;
+
+      if (data.evidence?.length) {
+        $('#qa-sources').innerHTML = data.evidence.map((e, i) => `
+          <div class="qa-source">
+            <span class="qa-source-title">证据 ${i + 1}</span>
+            <span class="qa-source-meta">${escapeHtml(e.source)} · 匹配分 ${e.score}</span>
+            <span class="qa-source-snippet">${escapeHtml(e.snippet)}</span>
+          </div>
+        `).join('');
+        return;
+      }
 
       if (data.sources?.length) {
         $('#qa-sources').innerHTML = data.sources.map((s, i) => `
@@ -624,6 +660,7 @@ function bindUploadEvents() {
   const pickBtn = $('#pick-files');
   const uploadBtn = $('#upload-btn');
   const dropzone = $('#upload-dropzone');
+  const uploadTopic = $('#upload-topic');
 
   pickBtn.addEventListener('click', () => input.click());
 
@@ -650,8 +687,14 @@ function bindUploadEvents() {
   uploadBtn.addEventListener('click', async () => {
     if (!state.pendingFiles.length) return;
     const category = $('#upload-category').value.trim();
+    const topicId = uploadTopic?.value || '';
+    if (!topicId) {
+      setUploadStatus('请先选择上传主题', true);
+      return;
+    }
     const fd = new FormData();
     for (const f of state.pendingFiles) fd.append('files', f);
+    fd.append('topicId', topicId);
     if (category) fd.append('category', category);
 
     uploadBtn.disabled = true;
@@ -718,6 +761,7 @@ document.getElementById('view-list-btn').addEventListener('click', () => setView
     window.location.href = '/login.html';
   };
 
+  await loadTopics();
   bindQAEvents();
   bindUploadEvents();
   document.getElementById('view-grid').classList.toggle('active', state.viewMode === 'grid');

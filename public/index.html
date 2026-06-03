@@ -43,6 +43,7 @@
 
     <div class="filter-group upload-group">
       <h3>上传文件</h3>
+      <select id="upload-topic" title="选择上传主题"></select>
       <input id="upload-category" type="text" placeholder="可选子目录，如 技术/后端" />
       <div id="upload-dropzone" class="upload-dropzone">
         拖拽文件到这里，或点击“选择文件”
@@ -69,6 +70,7 @@
       <h2>知识库问答</h2>
       <p class="muted">输入自然语言问题，系统会基于文档内容生成回答并附上来源。</p>
       <div class="qa-input-row">
+        <select id="qa-topic" title="选择提问主题"></select>
         <input id="qa-question" type="text" placeholder="例如：如何添加文章并让系统识别分类？" />
         <button id="qa-ask" type="button">提问</button>
       </div>
