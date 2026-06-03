@@ -1,0 +1,6 @@
+[
+  { "topicId": "work", "name": "工作经验", "description": "日常工作沉淀", "isActive": true },
+  { "topicId": "food", "name": "美食", "description": "菜谱与餐饮主题", "isActive": true },
+  { "topicId": "traffic", "name": "交通", "description": "出行与路线经验", "isActive": true },
+  { "topicId": "martial", "name": "武侠", "description": "武侠创作与设定", "isActive": true }
+]
