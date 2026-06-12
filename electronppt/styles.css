@@ -33,6 +33,12 @@ body {
   background: linear-gradient(120deg, #ffffff 0%, #f8fbff 100%);
 }
 
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .topbar h1 {
   margin: 0;
   font-size: 22px;

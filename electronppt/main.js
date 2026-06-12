@@ -66,6 +66,77 @@ async function pushRecentImport(entry) {
   return next;
 }
 
+function getZipPathForSlideDir(slideDir) {
+  return `${slideDir}.zip`;
+}
+
+async function createZipArchive(sourceDir, zipPath) {
+  const scriptContent = [
+    'param([string]$sourceDir, [string]$zipPath)',
+    '$ErrorActionPreference = "Stop"',
+    'if (Test-Path -LiteralPath $zipPath) { Remove-Item -LiteralPath $zipPath -Force }',
+    'Compress-Archive -Path (Join-Path $sourceDir "*") -DestinationPath $zipPath -Force',
+    'Write-Output "ZIP:$zipPath"',
+  ].join('\n');
+
+  const scriptPath = path.join(os.tmpdir(), `electronppt-zip-${Date.now()}.ps1`);
+
+  try {
+    await fs.writeFile(scriptPath, `\uFEFF${scriptContent}`, 'utf8');
+
+    const winPsExe = path.join(
+      process.env.SystemRoot || 'C:\\Windows',
+      'System32',
+      'WindowsPowerShell',
+      'v1.0',
+      'powershell.exe'
+    );
+    const pwshExe = path.join(
+      process.env.ProgramFiles || 'C:\\Program Files',
+      'PowerShell',
+      '7',
+      'pwsh.exe'
+    );
+
+    const shellCandidates = [
+      { exe: pwshExe, args: ['-NoProfile', '-NonInteractive', '-Sta'] },
+      { exe: 'pwsh', args: ['-NoProfile', '-NonInteractive', '-Sta'] },
+      { exe: winPsExe, args: ['-NoProfile', '-NonInteractive', '-Sta', '-ExecutionPolicy', 'Bypass'] },
+    ];
+
+    let lastShellError = '';
+
+    for (const shell of shellCandidates) {
+      try {
+        const { stdout } = await execFileAsync(shell.exe, [
+          ...shell.args,
+          '-File',
+          scriptPath,
+          sourceDir,
+          zipPath,
+        ]);
+
+        const zipLine = stdout
+          .split(/\r?\n/)
+          .map((line) => line.trim())
+          .find((line) => line.startsWith('ZIP:'));
+
+        if (!zipLine) {
+          throw new Error(`NO_ZIP_LINE:${stdout || 'empty output'}`);
+        }
+
+        return zipPath;
+      } catch (error) {
+        lastShellError = error?.message || String(error);
+      }
+    }
+
+    throw new Error(`ZIP_CREATE_FAILED:${lastShellError}`);
+  } finally {
+    await fs.rm(scriptPath, { force: true });
+  }
+}
+
 async function exportSlidesByOfficeApp(pptPath, outputDir) {
   const scriptContent = [
     'param([string]$pptPath, [string]$outputDir)',
@@ -194,6 +265,9 @@ async function buildImportResult(name, slideDir, engine) {
     throw new Error('导入目录中未找到可展示图片，请重新导入该 PPT。');
   }
 
+  const zipPath = getZipPathForSlideDir(slideDir);
+  await createZipArchive(slideDir, zipPath);
+
   return {
     ok: true,
     name,
@@ -201,6 +275,7 @@ async function buildImportResult(name, slideDir, engine) {
     engine,
     slides,
     slideDir,
+    zipPath,
   };
 }
 
@@ -263,6 +338,44 @@ ipcMain.handle('import-ppt', async (_event, pptPath) => {
     return {
       ok: false,
       message,
+    };
+  }
+});
+
+ipcMain.handle('save-slide-zip', async (_event, payload) => {
+  try {
+    const zipPath = payload?.zipPath;
+    const suggestedName = payload?.suggestedName || 'slides.zip';
+
+    if (!zipPath) {
+      return {
+        ok: false,
+        message: '缺少 ZIP 文件，请先重新导入 PPT。',
+      };
+    }
+
+    await fs.access(zipPath);
+
+    const target = await dialog.showSaveDialog({
+      title: '保存全部图片 ZIP',
+      defaultPath: suggestedName,
+      filters: [{ name: 'ZIP 压缩包', extensions: ['zip'] }],
+    });
+
+    if (target.canceled || !target.filePath) {
+      return { ok: false, canceled: true };
+    }
+
+    await fs.copyFile(zipPath, target.filePath);
+
+    return {
+      ok: true,
+      savedPath: target.filePath,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error?.message || 'ZIP 保存失败',
     };
   }
 });

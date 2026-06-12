@@ -1,4 +1,5 @@
 const importBtn = document.getElementById('importBtn');
+const downloadZipBtn = document.getElementById('downloadZipBtn');
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
 const statusBar = document.getElementById('statusBar');
@@ -13,6 +14,7 @@ const state = {
   pageCount: 0,
   currentPage: 0,
   name: '',
+  zipPath: '',
   recentImports: [],
 };
 
@@ -23,6 +25,10 @@ function setStatus(text) {
 function setControlsEnabled(enabled) {
   prevBtn.disabled = !enabled;
   nextBtn.disabled = !enabled;
+}
+
+function updateZipButtonState() {
+  downloadZipBtn.disabled = !state.zipPath;
 }
 
 function buildPageList() {
@@ -115,10 +121,12 @@ function applyImportResult(result) {
   state.slides = result.slides;
   state.pageCount = result.pageCount;
   state.name = result.name;
+  state.zipPath = result.zipPath || '';
 
   metaText.textContent = `${state.name} | 共 ${state.pageCount} 页`;
   buildPageList();
   goToPage(1);
+  updateZipButtonState();
 }
 
 async function loadRecentImports() {
@@ -150,6 +158,7 @@ async function importPptFlow() {
   setStatus('正在导出每一页图片，请稍候...');
   importBtn.disabled = true;
   setControlsEnabled(false);
+  downloadZipBtn.disabled = true;
 
   try {
     const result = await window.pptApi.importPpt(picked);
@@ -169,7 +178,42 @@ async function importPptFlow() {
   }
 }
 
+async function downloadZipFlow() {
+  if (!state.zipPath) {
+    setStatus('当前没有可下载的 ZIP，请先导入 PPT。');
+    return;
+  }
+
+  downloadZipBtn.disabled = true;
+  setStatus('正在保存 ZIP，请选择目标位置...');
+
+  try {
+    const result = await window.pptApi.saveSlideZip({
+      zipPath: state.zipPath,
+      suggestedName: `${state.name || 'slides'}.zip`,
+    });
+
+    if (!result?.ok) {
+      if (result?.canceled) {
+        setStatus('已取消保存 ZIP');
+      } else {
+        setStatus(`保存失败: ${result?.message || '未知错误'}`);
+      }
+      return;
+    }
+
+    const successText = `下载成功，ZIP 已保存: ${result.savedPath}`;
+    setStatus(successText);
+    window.alert(successText);
+  } catch (error) {
+    setStatus(`保存失败: ${error?.message || '未知错误'}`);
+  } finally {
+    updateZipButtonState();
+  }
+}
+
 importBtn.addEventListener('click', importPptFlow);
+downloadZipBtn.addEventListener('click', downloadZipFlow);
 
 prevBtn.addEventListener('click', () => {
   goToPage(state.currentPage - 1);
